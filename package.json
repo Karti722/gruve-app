@@ -1,0 +1,18 @@
+{
+  "name": "gruve-ai-vibe-coding-demo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Full-stack demo covering LLMs, RAG, prompt engineering, AI agents, MCP servers, and polyglot microservices — built for the Gruve AI Vibe Coding Engineer role.",
+  "scripts": {
+    "install:all": "npm install && npm install --prefix backend && npm install --prefix frontend && npm install --prefix mcp-server && pip install -r python-service/requirements.txt",
+    "build:mcp": "npm run build --prefix mcp-server",
+    "dev": "concurrently -n BACKEND,FRONTEND,PYTHON,MCP -c blue,green,yellow,magenta \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\" \"npm run dev --prefix python-service\" \"npm run build --prefix mcp-server -- --watch\"",
+    "dev:backend": "npm run dev --prefix backend",
+    "dev:frontend": "npm run dev --prefix frontend",
+    "dev:python": "npm run dev --prefix python-service",
+    "stop": "node scripts/stop-all.js"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

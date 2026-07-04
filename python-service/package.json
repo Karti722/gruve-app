@@ -1,0 +1,9 @@
+{
+  "name": "gruve-python-service-scripts",
+  "private": true,
+  "description": "npm script shims only, so the root 'npm run dev' can launch this Python service alongside the Node services. Requires Python deps to already be installed (pip install -r requirements.txt).",
+  "scripts": {
+    "dev": "python -m uvicorn app.main:app --reload --port 8001",
+    "start": "python -m uvicorn app.main:app --port 8001"
+  }
+}

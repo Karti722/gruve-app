@@ -1,0 +1,31 @@
+# dependencies
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# build output
+dist/
+build/
+.next/
+out/
+
+# env
+.env
+.env.local
+
+# runtime data
+*.sqlite
+*.sqlite-journal
+backend/data/vector-store.sqlite
+
+# logs
+npm-debug.log*
+*.log
+
+# editor/OS
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

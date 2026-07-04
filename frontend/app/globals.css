@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body {
+  background-color: #0b0b14;
+  color: #e6e6f0;
+}
+
+::selection {
+  background-color: #6c5ce7;
+  color: white;
+}
+
+.card {
+  @apply rounded-2xl border border-white/10 bg-white/[0.03] p-6 shadow-lg backdrop-blur-sm;
+}
+
+.pill {
+  @apply rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-white/70;
+}
+
+.btn-primary {
+  @apply rounded-lg bg-brand-500 px-4 py-2 font-medium text-white transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-50;
+}
+
+.input {
+  @apply w-full rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder-white/40 outline-none focus:border-brand-400;
+}
