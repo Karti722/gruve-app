@@ -121,4 +121,8 @@ function stopAll() {
   console.log(`Done — stopped ${toKill.size} process(es).`);
 }
 
-stopAll();
+module.exports = { stopAll };
+
+if (require.main === module) {
+  stopAll();
+}
