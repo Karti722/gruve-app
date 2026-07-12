@@ -30,11 +30,13 @@ never mistaken for a live answer.
 ```
 gruve-app/
 ├── codebase.md                    # this file
+├── deployment.md                  # how to deploy this app to AWS / Azure / GCP
 ├── package.json                   # root orchestration scripts (npm run dev, npm run stop, etc.)
 ├── docker-compose.yml             # wires postgres (pgvector), python-service, backend, frontend together
 ├── .env.example                   # copy to .env and fill in what you have
 ├── .gitignore
 ├── scripts/
+│   ├── dev.js                     # npm run dev — runs all services, auto-cleans up on exit/Ctrl+C
 │   └── stop-all.js                # npm run stop — kills every service npm run dev starts
 │
 ├── backend/                       # Node.js + TypeScript + Express REST API
@@ -117,16 +119,25 @@ gruve-app/
 ## 2. File-by-file explanation
 
 ### Root
-- **`package.json`** — orchestration only. `npm run dev` uses `concurrently` to boot the backend,
-  frontend, Python service, and MCP server watch-build all at once.
+- **`package.json`** — orchestration only. `npm run dev` runs `scripts/dev.js`, which drives
+  `concurrently` to boot the backend, frontend, Python service, and MCP server watch-build all at
+  once.
 - **`docker-compose.yml`** — four containers: `postgres` (Postgres + the pgvector extension,
   backing the RAG vector store), `python-service`, `backend` (which also bundles `mcp-server` into
   its image, since the agent spawns MCP as a child process), and `frontend`.
 - **`.env.example`** — every environment variable the app reads, each with an inline comment
   explaining what it's for and what happens if it's left blank.
-- **`scripts/stop-all.js`** — powers `npm run stop`. Finds and kills anything listening on this
-  app's ports plus any lingering mcp-server/concurrently watcher processes, so a half-killed
-  `npm run dev` (common on Windows — see section 4) doesn't block the next one from starting.
+- **`deployment.md`** — step-by-step guide for deploying this app to AWS (ECS Fargate + RDS),
+  Azure (Container Apps + Azure Database for PostgreSQL), or GCP (Cloud Run + Cloud SQL), plus a
+  note on the Kubernetes path if you need it instead.
+- **`scripts/dev.js`** — powers `npm run dev`. Drives `concurrently` programmatically (rather than
+  shelling out to its CLI) specifically so it can run `stop-all.js`'s cleanup automatically when
+  `npm run dev` exits or is interrupted — see the "Stopping everything" note in section 4 for the
+  reliability caveat on Windows.
+- **`scripts/stop-all.js`** — powers `npm run stop` (and is what `dev.js` calls internally on
+  exit). Finds and kills anything listening on this app's ports plus any lingering
+  mcp-server/dev.js watcher processes, so a half-killed `npm run dev` (common on Windows — see
+  section 4) doesn't block the next one from starting.
 
 ### `backend/` — the Express REST API
 - **`src/config.ts`** — loads `.env` once and exposes a typed `config` object, including the
@@ -267,18 +278,27 @@ server built into its image), and `frontend` (:3000). Set `ANTHROPIC_API_KEY` in
 root `.env` before running to get live Claude responses instead of mock mode.
 
 ### Stopping everything (Options A / B)
+Press **Ctrl+C** in the terminal running `npm run dev`. As of `scripts/dev.js`, this should now
+clean up after itself automatically: `concurrently`'s own SIGINT handling settles `dev.js`'s
+`result` promise, which triggers the exact same cleanup as `npm run stop` before the process
+exits — so in the common case, Ctrl+C alone is enough.
+
+The honest caveat: Windows process trees (`npm` → `cmd.exe` → `node` → `tsx`/`next`/`uvicorn`,
+each nested a layer deeper) don't always propagate a kill signal all the way down, and this was
+directly observed during development — orphaned processes have shown up after both a plain
+Ctrl+C-style interrupt and, less surprisingly, a hard/forced kill (e.g. closing the terminal
+window, or a supervisor tool killing the process without giving it a chance to run its exit
+handler). So treat Ctrl+C as "probably enough," not "guaranteed," and run this after, regardless:
 ```bash
 npm run stop
 ```
-Ctrl+C-ing `npm run dev` isn't always enough — `concurrently`'s child processes (tsx, Next.js,
-uvicorn, the mcp-server watch-build), nested a few layers deep through npm's own process wrappers,
-routinely survive on Windows even after the top-level process is killed, leaving stale servers
-holding the ports. `npm run stop` (`scripts/stop-all.js`) finds and kills anything actually
-listening on this app's ports (3000, 3001, 4000, 8001) plus any lingering mcp-server/concurrently
-watcher processes, so the next `npm run dev` doesn't fail with an address-already-in-use error.
-It only ever kills processes it confirms are `node`/`python` — if something else is unexpectedly
-holding one of those ports, it's skipped and logged rather than killed. Safe to run any time
-(including when nothing is running) and safe to run multiple times in a row.
+`npm run stop` (`scripts/stop-all.js` — the same script `dev.js` calls internally) finds and kills
+anything actually listening on this app's ports (3000, 3001, 4000, 8001) plus any lingering
+mcp-server/`dev.js` watcher processes, so the next `npm run dev` doesn't fail with an
+address-already-in-use error. It only ever kills processes it confirms are `node`/`python` — if
+something else is unexpectedly holding one of those ports, it's skipped and logged rather than
+killed. Safe to run any time (including when nothing is running, or right after a Ctrl+C that
+already cleaned up fine) and safe to run multiple times in a row.
 
 Note: `npm run stop` deliberately does **not** touch the `postgres` container — that's a
 long-lived data service, not a dev server, so it's left running across `npm run dev` sessions.

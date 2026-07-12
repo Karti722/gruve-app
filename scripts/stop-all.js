@@ -64,8 +64,10 @@ function pidsListeningOnPort(port) {
     .map((l) => l.trim());
 }
 
-// Best-effort cleanup for processes that don't hold a port at all — the
-// mcp-server compiler watcher and the concurrently orchestrator itself.
+// Best-effort cleanup for processes that don't hold a port at all: the
+// mcp-server compiler watcher, and the dev orchestrator itself (dev.js, or —
+// for backward compatibility with orphans from before dev.js existed — a
+// raw `concurrently ... "BACKEND,FRONTEND,PYTHON,MCP"` CLI invocation).
 //
 // The Windows query below also requires Name -eq 'node.exe'. Without that,
 // the query self-matches: it shells out through a powershell.exe/cmd.exe
@@ -76,14 +78,15 @@ function pidsListeningOnPort(port) {
 function pidsOfLingeringWatchers() {
   if (isWindows) {
     const out = run(
-      `powershell -NoProfile -Command "Get-CimInstance Win32_Process | Where-Object { $_.Name -eq 'node.exe' -and ($_.CommandLine -like '*BACKEND,FRONTEND,PYTHON,MCP*' -or ($_.CommandLine -like '*mcp-server*' -and $_.CommandLine -like '*tsc*')) } | Select-Object -ExpandProperty ProcessId"`
+      `powershell -NoProfile -Command "Get-CimInstance Win32_Process | Where-Object { $_.Name -eq 'node.exe' -and ($_.CommandLine -like '*scripts*dev.js*' -or $_.CommandLine -like '*BACKEND,FRONTEND,PYTHON,MCP*' -or ($_.CommandLine -like '*mcp-server*' -and $_.CommandLine -like '*tsc*')) } | Select-Object -ExpandProperty ProcessId"`
     );
     return out.split("\n").map((l) => l.trim());
   }
   // pgrep excludes its own PID from results by default, so no self-match risk here.
-  const a = run(`pgrep -f "BACKEND,FRONTEND,PYTHON,MCP"`);
-  const b = run(`pgrep -f "mcp-server.*tsc"`);
-  return `${a}\n${b}`.split("\n").map((l) => l.trim());
+  const a = run(`pgrep -f "scripts/dev.js"`);
+  const b = run(`pgrep -f "BACKEND,FRONTEND,PYTHON,MCP"`);
+  const c = run(`pgrep -f "mcp-server.*tsc"`);
+  return `${a}\n${b}\n${c}`.split("\n").map((l) => l.trim());
 }
 
 function stopAll() {
