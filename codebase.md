@@ -130,8 +130,9 @@ ai-nexus/
 - **`.env.example`** — every environment variable the app reads, each with an inline comment
   explaining what it's for and what happens if it's left blank.
 - **`deployment.md`** — step-by-step guide for deploying this app to AWS (ECS Fargate + RDS),
-  Azure (Container Apps + Azure Database for PostgreSQL), or GCP (Cloud Run + Cloud SQL), plus a
-  note on the Kubernetes path if you need it instead.
+  Azure (Container Apps + Azure Database for PostgreSQL), or GCP (Cloud Run + Cloud SQL); plus a
+  Kubernetes path if you need it, and a genuinely **$0/month** path (Cloud Run or Container Apps +
+  [Neon](https://neon.tech) for a free `pgvector`-enabled Postgres) for demo/portfolio use.
 - **`scripts/dev.js`** — powers `npm run dev`. Drives `concurrently` programmatically (rather than
   shelling out to its CLI) specifically so it can run `stop-all.js`'s cleanup automatically when
   `npm run dev` exits or is interrupted — see the "Stopping everything" note in section 4 for the

@@ -74,18 +74,6 @@ export default function HomePage() {
         ))}
       </section>
 
-      <section className="card">
-        <h2 className="mb-2 text-lg font-semibold text-white">Runs with or without an API key</h2>
-        <p className="text-sm leading-relaxed text-white/70">
-          Set <code className="rounded bg-white/10 px-1.5 py-0.5">ANTHROPIC_API_KEY</code> in your{" "}
-          <code className="rounded bg-white/10 px-1.5 py-0.5">.env</code> for real Claude
-          responses. Leave it blank and the backend automatically falls back to a deterministic
-          mock LLM — every request, response shape, tool call, and citation still flows through
-          the real pipeline; only the model call itself is canned, and it's always labeled{" "}
-          <span className="text-white/90">[MOCK MODE]</span> so it's never mistaken for a live
-          answer.
-        </p>
-      </section>
     </div>
   );
 }
