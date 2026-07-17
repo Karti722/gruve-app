@@ -34,7 +34,7 @@ const knowledgeBaseTool: LocalTool = {
   definition: {
     name: "search_knowledge_base",
     description:
-      "Searches the internal RAG knowledge base (docs about LLMs, RAG, agents, MCP, vector DBs, and full-stack architecture) and returns the most relevant passages.",
+      "Searches the internal RAG knowledge base (docs about LLMs, RAG, agents, MCP, vector DBs and full-stack architecture) and returns the most relevant passages.",
     input_schema: {
       type: "object",
       properties: {
@@ -58,7 +58,7 @@ const knowledgeBaseTool: LocalTool = {
 
 export const LOCAL_TOOLS: LocalTool[] = [calculatorTool, knowledgeBaseTool];
 
-/** Tiny recursive-descent arithmetic evaluator — deliberately avoids
+/** Tiny recursive-descent arithmetic evaluator: deliberately avoids
  * eval()/Function() so the "calculator" tool can't be used to run arbitrary
  * JS even though its input ultimately comes from model output. */
 function evaluateArithmetic(source: string): number {

@@ -19,7 +19,7 @@ const bodyFont = Source_Serif_4({
 export const metadata: Metadata = {
   title: "AI Nexus",
   description:
-    "A hands-on, full-stack tour of core AI engineering concepts — LLMs, RAG, prompt engineering, AI agents, and MCP — for engineers and newcomers alike.",
+    "A hands-on, full-stack tour of core AI engineering concepts (LLMs, RAG, prompt engineering, AI agents and MCP) for engineers and newcomers alike.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

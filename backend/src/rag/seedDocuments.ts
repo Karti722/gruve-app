@@ -8,11 +8,11 @@ import { addChunk, countChunks, isStoreEmpty } from "./vectorStore";
 const KB_DIR = path.resolve(__dirname, "../../data/knowledge-base");
 
 /** Loads every markdown file in data/knowledge-base, chunks it, embeds the
- * chunks, and writes them into the vector store. Runs once at server
+ * chunks and writes them into the vector store. Runs once at server
  * startup; skipped on subsequent restarts once the store is populated. */
 export async function seedKnowledgeBaseIfEmpty(): Promise<void> {
   if (!(await isStoreEmpty())) {
-    console.log(`[rag] vector store already has ${await countChunks()} chunks — skipping seed.`);
+    console.log(`[rag] vector store already has ${await countChunks()} chunks, skipping seed.`);
     return;
   }
 
@@ -30,5 +30,5 @@ export async function seedKnowledgeBaseIfEmpty(): Promise<void> {
     }
   }
 
-  console.log(`[rag] seeding complete — ${await countChunks()} chunks indexed.`);
+  console.log(`[rag] seeding complete: ${await countChunks()} chunks indexed.`);
 }

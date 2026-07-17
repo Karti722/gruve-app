@@ -32,14 +32,14 @@ export async function embedTexts(texts: string[]): Promise<number[][]> {
       `[embeddingsClient] python-service unreachable (${(err as Error).message}); ` +
         `using in-process fallback embedding instead.`
     );
-    // NOTE: must be wrapped in an arrow fn — Array.map passes (value, index,
+    // NOTE: must be wrapped in an arrow fn; Array.map passes (value, index,
     // array) to its callback, and index would otherwise silently clobber
     // localHashEmbedding's `dims` parameter.
     return texts.map((text) => localHashEmbedding(text));
   }
 }
 
-/** Deterministic hashing ("bag of words") embedding — no ML model required.
+/** Deterministic hashing ("bag of words") embedding: no ML model required.
  * Same algorithm the Python service falls back to, so results stay
  * consistent whichever path served the request. Good enough for keyword-ish
  * semantic similarity in a demo; swap for real sentence-transformer or

@@ -1,12 +1,12 @@
 """
-Evaluating LLM outputs — scoring a model's response against a reference
+Evaluating LLM outputs: scoring a model's response against a reference
 answer instead of eyeballing it, which is what actually lets a team ship
 changes to a prompt or model with confidence instead of guesswork. Real
 eval pipelines often spend a model call on an "LLM-as-judge" for nuanced
-grading, but that's expensive to run on every single case — so they
+grading, but that's expensive to run on every single case, so they
 typically run cheaper, deterministic signals first: exact match, a
 longest-common-subsequence overlap score (the same idea behind ROUGE-L, a
-standard summarization/translation metric — Lin, 2004), and embedding-based
+standard summarization/translation metric; Lin, 2004) and embedding-based
 semantic similarity (see embeddings.py) for catching answers that are
 correct but phrased differently. This demo runs exactly those three.
 """

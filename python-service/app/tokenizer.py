@@ -1,6 +1,6 @@
 """
-Byte-pair encoding (BPE) tokenization and per-model cost estimation — the
-subword algorithm behind every modern LLM's tokenizer (GPT, Claude, and
+Byte-pair encoding (BPE) tokenization and per-model cost estimation: the
+subword algorithm behind every modern LLM's tokenizer (GPT, Claude and
 others all use a BPE variant), adapted from a text-compression technique
 for neural machine translation (Sennrich, Haddow & Birch, 2015). Starting
 from individual characters, the single most frequent adjacent pair
@@ -9,7 +9,7 @@ until a target vocabulary size is reached. Common words end up as a
 single token; rare or made-up words fall back to smaller, still-meaningful
 pieces instead of one "unknown word" marker for each.
 
-Trained once, at import time, on a small bundled corpus — real BPE, just
+Trained once, at import time, on a small bundled corpus: real BPE, just
 learned from a few kilobytes of text rather than the hundreds of
 gigabytes production tokenizers train on, so don't expect it to match
 GPT's or Claude's actual token boundaries exactly. Token *counting* is a
@@ -26,7 +26,7 @@ from typing import Dict, List, Tuple
 _WORD_RE = re.compile(r"\w+|[^\w\s]")
 _END = "</w>"
 
-# A small bundled corpus to learn merges from — reuses this app's own
+# A small bundled corpus to learn merges from, reusing this app's own
 # knowledge-base style AI-concept prose, so the demo's vocabulary leans
 # toward the same words this tutorial actually talks about.
 _TRAINING_CORPUS = """
@@ -51,7 +51,7 @@ everyday concern for anyone building with these systems in production.
 
 NUM_MERGES = 300
 
-# Published per-million-token pricing, USD, current as of July 2026 — see
+# Published per-million-token pricing, USD, current as of July 2026: see
 # platform.claude.com/docs/en/about-claude/pricing. Changes over time; this
 # is illustrative, not a live-fetched price.
 MODEL_PRICING = {
@@ -105,7 +105,7 @@ def _train_bpe(corpus: str, num_merges: int) -> List[Tuple[str, str]]:
             break
         best_pair = max(pairs, key=pairs.get)
         if pairs[best_pair] < 2:
-            break  # stop merging pairs that only ever occurred once — not a real pattern
+            break  # stop merging pairs that only ever occurred once, not a real pattern
         vocab = _merge_vocab(best_pair, vocab)
         merges.append(best_pair)
 

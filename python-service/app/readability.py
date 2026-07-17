@@ -1,8 +1,8 @@
 """
 Readability scoring using the Flesch Reading Ease and Flesch-Kincaid Grade
-Level formulas (Flesch, 1948; Kincaid et al., 1975) — well-established
+Level formulas (Flesch, 1948; Kincaid et al., 1975), well-established
 formulas that estimate how difficult a passage is to read from just three
-counts: words, sentences, and syllables.
+counts: words, sentences and syllables.
 
 Syllables are approximated by counting vowel groups per word (consecutive
 vowels count once, with a small adjustment for a silent trailing "e"), a

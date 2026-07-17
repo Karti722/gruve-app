@@ -39,7 +39,7 @@ function toReadability(r: PythonReadability): ReadabilityScore {
 
 /**
  * Calls the Python service's real TextRank summarizer. Unlike embeddings,
- * this has no in-process fallback — it's a standalone demo feature the
+ * this has no in-process fallback: it's a standalone demo feature the
  * rest of the app doesn't depend on, so a clear error is preferable to a
  * silently degraded response if the service is unreachable.
  */

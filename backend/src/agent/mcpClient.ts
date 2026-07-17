@@ -57,7 +57,7 @@ export async function getMcpTools(): Promise<ToolDefinition[]> {
 
 export async function callMcpTool(name: string, input: Record<string, unknown>): Promise<string> {
   const client = await getClient();
-  if (!client) return `MCP server unavailable — could not call tool "${name}".`;
+  if (!client) return `MCP server unavailable: could not call tool "${name}".`;
 
   const result = await client.callTool({ name, arguments: input });
   const content = result.content as Array<{ type: string; text?: string }>;

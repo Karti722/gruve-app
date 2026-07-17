@@ -23,7 +23,7 @@ const CHAPTERS = [
     number: "Chapter 4",
     href: "/agent",
     title: "AI Agents and Tool Use",
-    description: "Watching an AI decide, act, and use outside tools on its own.",
+    description: "Watching an AI decide, act and use outside tools on its own.",
   },
   {
     number: "Chapter 5",
@@ -81,7 +81,7 @@ export default function HomePage() {
       </h1>
 
       <p className="mx-auto mt-6 max-w-xl text-base italic leading-relaxed text-paper-ink/70 sm:text-lg">
-        A hands-on introduction to large language models, retrieval, and AI agents — learn how
+        A hands-on introduction to large language models, retrieval and AI agents: learn how
         modern AI actually works by using it yourself, no experience required.
       </p>
 
@@ -97,7 +97,7 @@ export default function HomePage() {
           className="group mt-6 flex items-baseline gap-3 border-b border-paper-ink/10 py-3 transition hover:border-brand-500/40"
         >
           <span className="shrink-0 font-display text-sm font-semibold italic text-paper-ink transition group-hover:text-brand-700">
-            Introduction — Why This Guide Exists
+            Introduction: Why This Guide Exists
           </span>
           <span
             className="hidden flex-1 translate-y-[-2px] border-b border-dotted border-paper-ink/30 sm:block"
@@ -154,7 +154,7 @@ export default function HomePage() {
       </div>
 
       <div className="mt-14 flex items-center justify-between border-t border-paper-ink/15 pt-3 font-display text-xs uppercase tracking-widest text-paper-ink/40">
-        <span>AI Nexus — An Interactive Tutorial</span>
+        <span>AI Nexus: An Interactive Tutorial</span>
         <span>Page i</span>
       </div>
     </div>

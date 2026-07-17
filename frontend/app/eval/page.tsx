@@ -153,9 +153,9 @@ export default function EvalPage() {
 
       <TextbookPage eyebrow="Chapter 7" title="Evaluating AI Outputs" pageNumber="Page 7">
         <p>
-          Chapter 6 cut cost with a semantic cache — but a cache hit is only a win if the cached
+          Chapter 6 cut cost with a semantic cache, but a cache hit is only a win if the cached
           answer was actually correct for the new question, not merely similar-sounding. More
-          broadly, every change to a prompt, a model, or a retrieval strategy raises the same
+          broadly, every change to a prompt, a model or a retrieval strategy raises the same
           question: did this make the system better or worse? Eyeballing a handful of outputs
           doesn't scale and doesn't catch regressions reliably. <strong>Evaluation</strong> is the
           discipline of scoring outputs against a reference answer systematically enough to actually
@@ -167,19 +167,19 @@ export default function EvalPage() {
         </h2>
         <p>
           Production eval pipelines often use another LLM as a judge for nuanced grading, but a
-          model call is exactly the expensive thing Chapters 1 and 6 were trying to avoid — so real
+          model call is exactly the expensive thing Chapters 1 and 6 were trying to avoid, so real
           pipelines typically run cheaper, deterministic checks first and reserve the model-as-judge
           step for cases that need it. This demo runs three of those cheaper signals:{" "}
           <strong>exact match</strong> (did the answer match character-for-character), a{" "}
           <strong>ROUGE-L</strong> overlap score (the longest sequence of words the candidate and
-          reference share, in order — a standard, decades-old summarization and translation metric),
+          reference share, in order; a standard, decades-old summarization and translation metric)
           and <strong>semantic similarity</strong> (the same embedding-based cosine similarity from
           Chapters 3 and 6, catching a correct answer that happens to be phrased differently).
         </p>
         <p>
           Try the three samples above. The exact-match pair scores a perfect 1.0 on everything. The
-          paraphrase scores low on exact match and ROUGE-L — neither cares about meaning, only
-          shared words in order — while semantic similarity gives it partial credit for saying the
+          paraphrase scores low on exact match and ROUGE-L (neither cares about meaning, only
+          shared words in order) while semantic similarity gives it partial credit for saying the
           same thing differently. The off-topic pair scores near zero across the board. No single
           signal is sufficient on its own, which is exactly why a real harness combines several.
         </p>
@@ -188,18 +188,18 @@ export default function EvalPage() {
           Grading a short-answer exam by checking for the exact expected sentence would fail every
           student who explained the idea correctly in their own words. Grading it by word overlap
           alone would reward a student who strings together the right vocabulary in a nonsensical
-          order. A real grader — human or automated — checks several signals together, the same way
+          order. A real grader, human or automated, checks several signals together, the same way
           this demo does before ever reaching for something as expensive as another model's
           judgment.
         </Analogy>
 
         <p>
-          Taken together, Chapter 1's token economics, Chapter 6's caching, and this chapter's
+          Taken together, Chapter 1's token economics, Chapter 6's caching and this chapter's
           evaluation are the applied-engineering thread running underneath the rest of this
           tutorial: knowing what a request costs, cutting that cost without silently breaking
           correctness, and measuring correctness well enough to know the difference. Chapter 8
-          picks the story back up with how real companies apply all of this — cost, caching, and
-          evaluation included — at production scale.
+          picks the story back up with how real companies apply all of this, cost, caching and
+          evaluation included, at production scale.
         </p>
 
         <Sources
@@ -209,7 +209,7 @@ export default function EvalPage() {
               href: "https://aclanthology.org/W04-1013/",
             },
             {
-              label: "Cosine similarity — Wikipedia",
+              label: "Cosine similarity, Wikipedia",
               href: "https://en.wikipedia.org/wiki/Cosine_similarity",
             },
           ]}

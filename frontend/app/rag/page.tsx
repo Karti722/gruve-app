@@ -143,7 +143,7 @@ export default function RagPage() {
           and it has no built-in way to consult anything outside that data. This creates two related
           problems: it cannot answer accurately about information that didn't exist at training
           time, or that was never public in the first place, and when asked about something it
-          doesn't actually know, it tends to produce a confident, fluent-sounding answer anyway — a
+          doesn't actually know, it tends to produce a confident, fluent-sounding answer anyway, a
           failure mode usually called hallucination, since the model isn't lying so much as filling
           a gap the only way it knows how.
         </p>
@@ -154,7 +154,7 @@ export default function RagPage() {
           separate collection of documents for the passages most relevant to the question being
           asked. A <em>generation</em> stage then hands those retrieved passages to the language
           model as part of its instructions, alongside the original question, and asks it to answer
-          using only that supplied material. The model is no longer answering purely from memory —
+          using only that supplied material. The model is no longer answering purely from memory;
           it's reading source material at the moment it responds, the same way a person might check
           a reference before answering rather than guessing.
         </p>
@@ -166,7 +166,7 @@ export default function RagPage() {
           together, and unrelated texts end up far apart. Every passage in the document collection
           is converted into an embedding once, ahead of time, and stored. When a question arrives,
           it's converted into an embedding the same way, and the system finds the passages whose
-          embeddings sit closest to the question's — typically using cosine similarity, a measure
+          embeddings sit closest to the question's, typically using cosine similarity, a measure
           of how closely two of these positions point in the same direction. The closest matches are
           the passages judged most relevant.
         </p>
@@ -174,7 +174,7 @@ export default function RagPage() {
         <Analogy>
           Think of an embedding as a coordinate on a map, except the map represents meaning instead
           of geography. Passages about closely related ideas land near each other on this map, and
-          unrelated passages land far apart — the same way two towns close together on an ordinary
+          unrelated passages land far apart, the same way two towns close together on an ordinary
           map tend to be a short drive apart, while towns on opposite coasts aren't. Searching by
           embedding is like asking "what's nearby?" instead of demanding an exact-word match.
         </Analogy>
@@ -190,11 +190,11 @@ export default function RagPage() {
         <Sources
           items={[
             {
-              label: "Mikolov et al., \"Efficient Estimation of Word Representations in Vector Space\" (2013) — the word2vec paper that popularized dense text embeddings",
+              label: "Mikolov et al., \"Efficient Estimation of Word Representations in Vector Space\" (2013): the word2vec paper that popularized dense text embeddings",
               href: "https://arxiv.org/abs/1301.3781",
             },
             {
-              label: "Lewis et al., \"Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks\" (2020) — the paper that coined \"RAG\"",
+              label: "Lewis et al., \"Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks\" (2020): the paper that coined \"RAG\"",
               href: "https://arxiv.org/abs/2005.11401",
             },
             {
@@ -202,7 +202,7 @@ export default function RagPage() {
               href: "https://arxiv.org/abs/1603.09320",
             },
             {
-              label: "pgvector — the open-source Postgres extension that implements this in a real, production vector database",
+              label: "pgvector: the open-source Postgres extension that implements this in a real, production vector database",
               href: "https://github.com/pgvector/pgvector",
             },
           ]}

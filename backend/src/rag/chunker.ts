@@ -1,7 +1,7 @@
 /**
  * Splits a markdown document into overlapping chunks along paragraph
  * boundaries. Overlap preserves context that would otherwise be lost right
- * at a chunk edge — a standard RAG preprocessing trick.
+ * at a chunk edge: a standard RAG preprocessing trick.
  */
 export function chunkText(text: string, maxChars = 600, overlapChars = 100): string[] {
   const paragraphs = text

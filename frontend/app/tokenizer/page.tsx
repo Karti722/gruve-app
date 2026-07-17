@@ -8,7 +8,7 @@ import { Sources } from "@/components/Sources";
 
 const SAMPLES = [
   "Retrieval-augmented generation grounds a model's answer in real, retrieved passages instead of relying on memory alone.",
-  "supercalifragilisticexpialidocious — a made-up word this tokenizer was never trained on.",
+  "supercalifragilisticexpialidocious, a made-up word this tokenizer was never trained on.",
 ];
 
 export default function TokenizerPage() {
@@ -135,7 +135,7 @@ export default function TokenizerPage() {
         <p>
           Before a model can predict anything, whatever you type has to be converted into a form it
           can actually read. This tutorial starts here, one level below the conversation itself: how
-          text becomes the individual pieces — <strong>tokens</strong> — a model processes one at a
+          text becomes the individual pieces, <strong>tokens</strong>, a model processes one at a
           time, and, since every hosted model bills per token rather than per character or word, what
           a request built out of them actually costs. Chapter 2 picks up right where this leaves off:
           an actual conversation with a model, generated one of these tokens at a time.
@@ -149,14 +149,14 @@ export default function TokenizerPage() {
           <strong>byte-pair encoding (BPE)</strong>. The algorithm starts from individual characters
           and repeatedly merges whichever adjacent pair of symbols occurs most often across a
           training corpus into a new symbol, generation after generation. Common words end up
-          collapsing into a single token; words the tokenizer never saw during training — a typo,
-          a made-up word, a rare technical term — fall back to smaller, still-meaningful pieces
+          collapsing into a single token; words the tokenizer never saw during training (a typo,
+          a made-up word, a rare technical term) fall back to smaller, still-meaningful pieces
           instead of one unhelpful "unknown word" marker.
         </p>
         <p>
           The demo above runs a real BPE tokenizer, trained live when this service starts up, on a
           small bundled paragraph of AI-concept text. It behaves exactly like a production
-          tokenizer — just trained on a few kilobytes of text instead of the enormous corpora real
+          tokenizer, just trained on a few kilobytes of text instead of the enormous corpora real
           providers use, so its token boundaries won't match GPT's or Claude's exactly. Try the
           second sample above: a long, invented word gets split into several smaller pieces, the
           same fallback behavior a production tokenizer relies on for text it's never seen before.
@@ -166,7 +166,7 @@ export default function TokenizerPage() {
           Think of it like assembling a word out of a fixed set of puzzle pieces cut in advance.
           Common whole words got their own single piece because they showed up constantly during
           cutting. A word that never showed up has to be built out of several smaller, more generic
-          pieces instead — slower to assemble, but nothing is ever truly unrepresentable.
+          pieces instead, slower to assemble, but nothing is ever truly unrepresentable.
         </Analogy>
 
         <h2 className="font-display text-lg font-bold text-paper-ink">
@@ -176,7 +176,7 @@ export default function TokenizerPage() {
           Once text is tokenized, cost is just arithmetic: providers publish a price per million
           tokens, separately for input (what you send) and output (what the model generates), and
           output is typically priced several times higher than input. At real, published rates, a
-          single short request costs a fraction of a cent — but that number stops being trivial the
+          single short request costs a fraction of a cent, but that number stops being trivial the
           moment a feature is handling thousands of requests a day, which is exactly the "cost
           optimization" concern Chapters 6 and 7 pick up next: how to spend fewer tokens without
           spending less accuracy.
@@ -185,11 +185,11 @@ export default function TokenizerPage() {
         <Sources
           items={[
             {
-              label: "Sennrich, Haddow & Birch, \"Neural Machine Translation of Rare Words with Subword Units\" (2015) — the paper that adapted BPE to language tokenization",
+              label: "Sennrich, Haddow & Birch, \"Neural Machine Translation of Rare Words with Subword Units\" (2015): the paper that adapted BPE to language tokenization",
               href: "https://arxiv.org/abs/1508.07909",
             },
             {
-              label: "Anthropic — official Claude API pricing (current rates cited above)",
+              label: "Anthropic: official Claude API pricing (current rates cited above)",
               href: "https://platform.claude.com/docs/en/about-claude/pricing",
             },
           ]}

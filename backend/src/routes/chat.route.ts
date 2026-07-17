@@ -10,7 +10,7 @@ export const chatRouter = Router();
 /**
  * POST /api/chat
  * body: { message: string, history?: ChatMessage[] }
- * Plain LLM chat completion demo — no tools, no retrieval, just prompt
+ * Plain LLM chat completion demo: no tools, no retrieval, just prompt
  * templating and multi-turn history.
  */
 chatRouter.post("/", async (req, res) => {

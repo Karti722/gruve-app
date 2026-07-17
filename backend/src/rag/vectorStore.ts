@@ -6,7 +6,7 @@ import { EMBEDDING_DIMS } from "./embeddingsClient";
  * Vector store backed by real pgvector: a Postgres extension that adds a
  * native `vector` column type plus ANN indexing (HNSW). Similarity search is
  * pushed down into Postgres as an indexed `ORDER BY embedding <=> $query`
- * query instead of pulling every row into JS and scoring it by hand — the
+ * query instead of pulling every row into JS and scoring it by hand: the
  * same pattern a production RAG pipeline would use (see
  * 06-vector-databases.md for the general concept, and this file for how it
  * looks in practice with a real vector DB rather than an exact in-memory scan).
@@ -26,8 +26,8 @@ const pool = new Pool({ connectionString: config.postgresUrl });
 
 let readyPromise: Promise<void> | null = null;
 
-/** Lazily creates the pgvector extension, table, and HNSW index the first
- * time the store is touched. Safe to call repeatedly — every statement is
+/** Lazily creates the pgvector extension, table and HNSW index the first
+ * time the store is touched. Safe to call repeatedly; every statement is
  * idempotent (`IF NOT EXISTS`). */
 function ensureReady(): Promise<void> {
   if (!readyPromise) {

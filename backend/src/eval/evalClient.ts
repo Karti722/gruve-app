@@ -9,7 +9,7 @@ export interface EvaluateResult {
 
 /**
  * Calls the Python service's LLM-output evaluation harness. No in-process
- * fallback — a standalone demo the rest of the app doesn't depend on, so
+ * fallback: a standalone demo the rest of the app doesn't depend on, so
  * a clear error beats a silently degraded response.
  */
 export async function evaluateOutput(candidate: string, reference: string): Promise<EvaluateResult> {

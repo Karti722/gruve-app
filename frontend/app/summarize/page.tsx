@@ -9,7 +9,7 @@ import { Sources } from "@/components/Sources";
 const SAMPLES = [
   {
     label: "A paragraph about AI concepts (with a couple of asides)",
-    text: "Large language models generate text one token at a time, predicting the most likely next piece of text based on everything written so far. This process is called autoregressive generation. Retrieval-Augmented Generation improves on this by searching a document collection for relevant passages before the model answers. Many people enjoy hiking on weekends as a way to relax outdoors. AI agents extend this further by letting a model call tools, observe the results, and decide what to do next in a repeating loop. Coffee is a popular beverage enjoyed by millions of people every morning. The Model Context Protocol standardizes how these tools are discovered and called, so a single integration works across many different applications.",
+    text: "Large language models generate text one token at a time, predicting the most likely next piece of text based on everything written so far. This process is called autoregressive generation. Retrieval-Augmented Generation improves on this by searching a document collection for relevant passages before the model answers. Many people enjoy hiking on weekends as a way to relax outdoors. AI agents extend this further by letting a model call tools, observe the results and decide what to do next in a repeating loop. Coffee is a popular beverage enjoyed by millions of people every morning. The Model Context Protocol standardizes how these tools are discovered and called, so a single integration works across many different applications.",
   },
   {
     label: "A paragraph about the Amazon rainforest",
@@ -191,9 +191,9 @@ export default function SummarizePage() {
 
       <TextbookPage eyebrow="Chapter 5" title="Automatic Text Summarization" pageNumber="Page 5">
         <p>
-          Long documents are slow to read, and not every sentence in one carries equal weight —
+          Long documents are slow to read, and not every sentence in one carries equal weight:
           most of a document's meaning tends to be concentrated in a handful of central sentences,
-          surrounded by supporting detail, examples, and asides. Skimming a full document just to
+          surrounded by supporting detail, examples and asides. Skimming a full document just to
           find its main point doesn't scale once there are hundreds of documents to get through,
           which is the same problem retrieval in Chapter 3 solves for finding documents in the
           first place. This chapter is about condensing a single one, once you're already looking
@@ -202,11 +202,11 @@ export default function SummarizePage() {
 
         <p>
           Summarization comes in two families. <strong>Abstractive</strong> summarization asks a
-          language model to write a new, shorter version of a text in its own words — the same
+          language model to write a new, shorter version of a text in its own words, the same
           generation mechanism from Chapter 2, given a document instead of a question.{" "}
           <strong>Extractive</strong> summarization takes a different approach: instead of
           generating new text, it selects a handful of the document's own sentences, verbatim, and
-          presents them in their original order as the summary. Nothing is paraphrased or invented —
+          presents them in their original order as the summary. Nothing is paraphrased or invented:
           every word in the output already existed in the input, which makes an extractive summary
           far easier to trust: there's no way for it to introduce a claim the source document never
           made.
@@ -216,11 +216,11 @@ export default function SummarizePage() {
           The demo above uses a specific extractive method called <strong>TextRank</strong>, which
           scores every sentence in a document by how well-connected it is to the rest of the
           document's ideas, then keeps only the highest-scoring ones. Each sentence is converted
-          into an embedding — the same technique from Chapter 3 — and compared against every other
+          into an embedding, the same technique from Chapter 3, and compared against every other
           sentence using cosine similarity, producing a similarity score for every pair. That turns
           the document into a graph: sentences are nodes, and their pairwise similarity is the
           strength of the edge connecting them. A short, iterative calculation then spreads
-          "importance" across that graph — a sentence earns a high score not by being long or first,
+          "importance" across that graph: a sentence earns a high score not by being long or first,
           but by being similar to many other sentences, the same way a web page earns a high
           PageRank score by being linked to from many other important pages rather than by anything
           on the page itself.
@@ -228,17 +228,17 @@ export default function SummarizePage() {
 
         <Analogy>
           Imagine everyone who has read the document is asked, independently, which other sentence
-          best supports what they just said. TextRank counts those "votes" — but a vote from a
+          best supports what they just said. TextRank counts those "votes", but a vote from a
           sentence that itself received a lot of votes counts for more than a vote from a sentence
           nobody else pointed to, the same recursive idea PageRank uses for links between web pages.
-          After a few rounds of re-counting with that weighting, the sentences with the most — and
-          most credible — support rise to the top.
+          After a few rounds of re-counting with that weighting, the sentences with the most (and
+          most credible) support rise to the top.
         </Analogy>
 
         <p>
           Above, paste in a paragraph or two of your own writing, or try one of the samples, and
           choose how many sentences to extract. The result shows exactly which sentences were
-          selected and their individual scores, so you can see why the algorithm chose them — the
+          selected and their individual scores, so you can see why the algorithm chose them, the
           same kind of transparency Chapter 3's citations and Chapter 4's reasoning trace already
           gave you for retrieval and tool use.
         </p>
@@ -249,15 +249,15 @@ export default function SummarizePage() {
         <p>
           Alongside the summary, two much older and simpler techniques run over the same text.
           <strong> Keyword extraction</strong> counts how often each word appears after common
-          function words like "the" and "of" are filtered out — the surviving high-frequency words
+          function words like "the" and "of" are filtered out; the surviving high-frequency words
           are a decent guess at what a passage is actually about. It's the "term frequency" half of
           TF-IDF, a term-weighting idea from information retrieval that predates embeddings by
           decades, included here to show that not every useful text technique needs a model at all.
         </p>
         <p>
           <strong>Readability scoring</strong> answers a different question: not what the text is
-          about, but how hard it is to read. The Flesch-Kincaid formulas turn three simple counts —
-          words, sentences, and syllables per word — into an estimated U.S. school grade level.
+          about, but how hard it is to read. The Flesch-Kincaid formulas turn three simple counts
+          (words, sentences and syllables per word) into an estimated U.S. school grade level.
           Longer sentences and longer words push the score up; shorter ones bring it down. Run it on
           both the original text and the extracted summary, and you can see a concrete side effect
           of extractive summarization: because TextRank tends to favor central, self-contained
@@ -272,7 +272,7 @@ export default function SummarizePage() {
               href: "https://aclanthology.org/W04-3252/",
             },
             {
-              label: "Brin & Page, \"The Anatomy of a Large-Scale Hypertextual Web Search Engine\" (1998) — the original PageRank paper TextRank adapts",
+              label: "Brin & Page, \"The Anatomy of a Large-Scale Hypertextual Web Search Engine\" (1998): the original PageRank paper TextRank adapts",
               href: "http://infolab.stanford.edu/pub/papers/google.pdf",
             },
             {
@@ -280,7 +280,7 @@ export default function SummarizePage() {
               href: "https://www.emeraldinsight.com/doi/10.1108/eb026526",
             },
             {
-              label: "Kincaid et al., \"Derivation of New Readability Formulas ... for Navy Enlisted Personnel\" (1975) — defines the Flesch-Kincaid Grade Level formula",
+              label: "Kincaid et al., \"Derivation of New Readability Formulas ... for Navy Enlisted Personnel\" (1975): defines the Flesch-Kincaid Grade Level formula",
               href: "https://apps.dtic.mil/sti/tr/pdf/ADA006655.pdf",
             },
           ]}

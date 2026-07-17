@@ -2,7 +2,7 @@
  * Shown automatically by Next.js while a route segment is loading or being
  * navigated to (see the sibling loading.tsx files). A circular spinner with
  * a printer's-ornament glyph at its center, styled to match the rest of the
- * book — not a generic app spinner.
+ * book, not a generic app spinner.
  */
 export function PageLoader() {
   return (

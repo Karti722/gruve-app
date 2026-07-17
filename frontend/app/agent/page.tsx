@@ -75,7 +75,7 @@ export default function AgentPage() {
               onChange={(e) => setUseMcp(e.target.checked)}
               className="h-4 w-4 rounded-sm border-paper-ink/20 bg-white"
             />
-            Let the agent use extra tools (time, weather, and topic lookups) from a connected tool
+            Let the agent use extra tools (time, weather and topic lookups) from a connected tool
             server
           </label>
 
@@ -125,21 +125,21 @@ export default function AgentPage() {
 
       <TextbookPage eyebrow="Chapter 4" title="AI Agents and Tool Use" pageNumber="Page 4">
         <p>
-          Even with retrieval, a language model still only produces text — it cannot perform a
-          precise calculation, take an action, or reach out to another system to check something in
+          Even with retrieval, a language model still only produces text: it cannot perform a
+          precise calculation, take an action or reach out to another system to check something in
           real time. It also can't decide partway through answering that it needs to do one of those
           things; at best, it can only respond with whatever it's already been given.
         </p>
 
         <p>
           An <strong>AI agent</strong> extends a language model with the ability to take actions, by
-          giving it a defined set of tools it's allowed to call — a calculator, a search function, a
-          request to another system — along with a description of what each tool does. Instead of
+          giving it a defined set of tools it's allowed to call (a calculator, a search function, a
+          request to another system) along with a description of what each tool does. Instead of
           only producing a final answer, the model can produce a request to use one of these tools.
           That request is carried out outside the model, and the result is fed back into the
           conversation as something the model just observed. The model then decides, based on that
           new information, whether it can answer now or needs to call another tool. Think, act,
-          observe, and repeat until ready to answer — this cycle is often called the{" "}
+          observe and repeat until ready to answer: this cycle is often called the{" "}
           <strong>ReAct</strong> pattern, short for "reason and act," and it's the mechanism behind
           every AI system capable of doing more than talking.
         </p>
@@ -147,8 +147,8 @@ export default function AgentPage() {
         <Analogy>
           A plain chatbot is like asking someone a question and only getting an answer from whatever
           they already remember. An agent is like sending someone to actually go find the answer:
-          they might do a calculation, check a source, or make a call, and only report back once
-          they've gathered what's actually needed — adjusting their next step based on what they
+          they might do a calculation, check a source or make a call, and only report back once
+          they've gathered what's actually needed, adjusting their next step based on what they
           learn along the way, rather than committing to one fixed plan up front.
         </Analogy>
 
@@ -159,7 +159,7 @@ export default function AgentPage() {
           this by defining one common format for describing tools and exchanging tool calls and
           results, independent of which AI model or application is using them. A program exposing
           tools over MCP can be reached by any MCP-compatible agent, and an agent that speaks MCP can
-          use tools from any MCP-compatible source — neither side needs to know anything specific
+          use tools from any MCP-compatible source; neither side needs to know anything specific
           about the other beyond the shared protocol.
         </p>
 
@@ -185,16 +185,16 @@ export default function AgentPage() {
             </li>
             <li>
               With "extra tools" switched on above: check the current time, look up a (simulated)
-              weather report, or list the topics this tutorial covers — reaching those tools over
+              weather report, or list the topics this tutorial covers, reaching those tools over
               MCP, described above
             </li>
           </ul>
         </div>
 
         <p>
-          Above, you could try a sample prompt or write your own — anything that needs a calculation
+          Above, you could try a sample prompt or write your own: anything that needs a calculation
           or a factual lookup works well. The reasoning trace it produced lists every tool the agent
-          called, exactly what it sent, what came back, and finally its answer, so you can see its
+          called, exactly what it sent, what came back and finally its answer, so you can see its
           thinking instead of just the result.
         </p>
 
@@ -209,7 +209,7 @@ export default function AgentPage() {
               href: "https://www.anthropic.com/news/model-context-protocol",
             },
             {
-              label: "Model Context Protocol — official specification and documentation",
+              label: "Model Context Protocol: official specification and documentation",
               href: "https://modelcontextprotocol.io",
             },
           ]}

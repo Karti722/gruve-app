@@ -2,7 +2,7 @@
 Text embedding generation for the RAG pipeline.
 
 This uses a deterministic hashing ("bag of words") embedding so the whole
-demo installs and runs with zero downloaded ML models and no GPU/API key —
+demo installs and runs with zero downloaded ML models and no GPU/API key:
 `pip install -r requirements.txt` is the entire setup. It captures enough
 keyword-level semantic similarity to make the RAG demo's retrieval results
 sensible.

@@ -1,7 +1,7 @@
 """
 AI Nexus Python microservice.
 
-Demonstrates: Python, REST APIs, and a polyglot microservices architecture
+Demonstrates: Python, REST APIs and a polyglot microservices architecture
 (this FastAPI service is called over HTTP by the Node.js backend to keep
 these text-processing concerns isolated and independently deployable/
 scalable from the chat/agent/RAG orchestration layer). Endpoints:
@@ -9,8 +9,8 @@ scalable from the chat/agent/RAG orchestration layer). Endpoints:
 summarization (plus keyword extraction and readability scoring);
 /tokenize for BPE tokenization and per-model cost estimation; /cache-sim
 for a semantic-caching simulation; and /evaluate for a small LLM-output
-evaluation harness — the last three modeling everyday applied AI
-engineering concerns (token cost, caching, and evals) rather than a
+evaluation harness, the last three modeling everyday applied AI
+engineering concerns (token cost, caching and evals) rather than a
 single user-facing demo technique.
 """
 

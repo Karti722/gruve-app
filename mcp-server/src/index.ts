@@ -4,14 +4,14 @@ import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprot
 
 /**
  * Standalone Model Context Protocol server. Runs as its own OS process,
- * completely decoupled from the Express backend — it communicates over
+ * completely decoupled from the Express backend: it communicates over
  * stdio using the MCP JSON-RPC framing, the same way it would if it were
- * plugged into Claude Desktop, Claude Code, or any other MCP-compatible
+ * plugged into Claude Desktop, Claude Code or any other MCP-compatible
  * host. backend/src/agent/mcpClient.ts spawns and talks to exactly this
  * process.
  *
  * Uses the low-level Server API with plain JSON-Schema tool definitions
- * (rather than the zod-based McpServer helper) — the same schema shape
+ * (rather than the zod-based McpServer helper): the same schema shape
  * Anthropic's tool-use API expects, which keeps this file dependency-light
  * and avoids the high-level SDK layer's zod3/zod4 compatibility churn.
  */

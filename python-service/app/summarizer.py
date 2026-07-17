@@ -1,11 +1,11 @@
 """
-Extractive text summarization using TextRank (Mihalcea & Tarau, 2004) — a
+Extractive text summarization using TextRank (Mihalcea & Tarau, 2004): a
 graph-based ranking algorithm that adapts the same random-walk idea behind
 Google's original PageRank to sentences instead of web pages.
 
 No language model is used, and no new sentence-similarity mechanism is
 introduced either: sentences are embedded with this service's existing
-`embed_text` (see embeddings.py) and compared with cosine similarity —
+`embed_text` (see embeddings.py) and compared with cosine similarity,
 the same building blocks the RAG demo already uses. A sentence that's
 similar to many other sentences in the document sits at a hub of the
 similarity graph and scores highly; a tangential aside, similar to few
@@ -19,7 +19,7 @@ from typing import List, TypedDict
 from app.embeddings import embed_text
 
 # Splits after sentence-ending punctuation, only when followed by whitespace
-# and then a capital letter or digit — good enough for the well-formed
+# and then a capital letter or digit, good enough for the well-formed
 # prose this demo expects, without pulling in a full NLP sentence tokenizer.
 _SENTENCE_SPLIT_RE = re.compile(r"(?<=[.!?])\s+(?=[A-Z0-9\"'])")
 
@@ -37,7 +37,7 @@ def split_sentences(text: str) -> List[str]:
 
 def _cosine_similarity(a: List[float], b: List[float]) -> float:
     # embed_text already returns unit-length vectors, so the dot product
-    # alone is the cosine similarity — no need to divide by magnitudes.
+    # alone is the cosine similarity, no need to divide by magnitudes.
     return max(sum(x * y for x, y in zip(a, b)), 0.0)
 
 

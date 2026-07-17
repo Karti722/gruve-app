@@ -44,7 +44,7 @@ export function KnowledgeBaseBrowser() {
     <div className="card space-y-4">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <p className="max-w-md text-sm text-paper-ink/60">
-          This is the real article collection the search above looks through — pick one to read it
+          This is the real article collection the search above looks through: pick one to read it
           in full and see exactly what the AI is drawing its answers from.
         </p>
 

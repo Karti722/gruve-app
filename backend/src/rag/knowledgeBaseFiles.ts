@@ -44,7 +44,7 @@ export function getKnowledgeBaseTitle(source: string): string {
 }
 
 /** Full content of a single knowledge-base file, or null if `source` isn't
- * one of the known files (guards against path traversal — only exact
+ * one of the known files (guards against path traversal: only exact
  * matches from the directory listing are ever read). */
 export function readKnowledgeBaseFile(source: string): KnowledgeBaseFile | null {
   const meta = listKnowledgeBaseFiles().find((f) => f.source === source);

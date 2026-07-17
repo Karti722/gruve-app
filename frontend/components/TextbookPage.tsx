@@ -6,8 +6,8 @@ interface TextbookPageProps {
 }
 
 /**
- * Renders content styled like an open page of a printed textbook — warm
- * paper tone, serif type, a chapter eyebrow, a folded top corner, and a
+ * Renders content styled like an open page of a printed textbook: warm
+ * paper tone, serif type, a chapter eyebrow, a folded top corner and a
  * running footer with a page number.
  */
 export function TextbookPage({ eyebrow, title, pageNumber, children }: TextbookPageProps) {
@@ -33,7 +33,7 @@ export function TextbookPage({ eyebrow, title, pageNumber, children }: TextbookP
       <div className="mt-7 space-y-5 text-[16px] leading-[1.85] text-paper-ink/85">{children}</div>
 
       <div className="mt-10 flex items-center justify-between border-t border-paper-ink/15 pt-3 font-display text-xs uppercase tracking-widest text-paper-ink/40">
-        <span>AI Nexus — An Interactive Tutorial</span>
+        <span>AI Nexus: An Interactive Tutorial</span>
         <span>{pageNumber}</span>
       </div>
     </div>

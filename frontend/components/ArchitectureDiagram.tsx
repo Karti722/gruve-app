@@ -32,7 +32,7 @@ export function ArchitectureDiagram() {
         </div>
       </div>
       <figcaption className="mt-2 text-center text-xs italic text-paper-ink/50">
-        Figure 5.1 — A request's path through the system. The browser only ever talks to the API
+        Figure 5.1: A request's path through the system. The browser only ever talks to the API
         server; the API server is the single point that reaches out to everything else.
       </figcaption>
     </figure>

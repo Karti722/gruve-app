@@ -22,7 +22,7 @@ interface PythonCacheSimResult {
 
 /**
  * Calls the Python service's semantic-cache simulation. No in-process
- * fallback — a standalone demo the rest of the app doesn't depend on, so
+ * fallback: a standalone demo the rest of the app doesn't depend on, so
  * a clear error beats a silently degraded response.
  */
 export async function simulateCache(queries: string[], threshold = 0.85): Promise<CacheSimResponse> {

@@ -22,12 +22,12 @@ export class MockLLMClient implements LLMClient {
     const question = lastUser?.content ?? "";
 
     return (
-      `[MOCK MODE — set ANTHROPIC_API_KEY in .env for real Claude responses]\n\n` +
+      `[MOCK MODE: set ANTHROPIC_API_KEY in .env for real Claude responses]\n\n` +
       `You asked: "${question}"\n\n` +
       `Here's a canned-but-structured reply demonstrating the chat pipeline: the request hit ` +
-      `the Express REST API, was wrapped with a system prompt, and would normally stream back ` +
+      `the Express REST API, was wrapped with a system prompt and would normally stream back ` +
       `token-by-token from Claude. Everything downstream (routing, prompt templates, message ` +
-      `history) is real — only the model call itself is mocked.`
+      `history) is real: only the model call itself is mocked.`
     );
   }
 

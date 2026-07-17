@@ -4,7 +4,7 @@ const TERMS = [
   {
     term: "Agent",
     definition:
-      "An AI system wrapped in a loop that lets it take actions — calling a tool, reading the result, and deciding what to do next — rather than only producing one reply. See Chapter 4.",
+      "An AI system wrapped in a loop that lets it take actions (calling a tool, reading the result and deciding what to do next) rather than only producing one reply. See Chapter 4.",
     source: { label: "Yao et al., \"ReAct\" (2022)", href: "https://arxiv.org/abs/2210.03629" },
   },
   {
@@ -25,7 +25,7 @@ const TERMS = [
     term: "Cosine Similarity",
     definition:
       "A way of measuring how closely two embeddings point in the same direction, used to find the passages most relevant to a question. See Chapter 3.",
-    source: { label: "Cosine similarity — Wikipedia", href: "https://en.wikipedia.org/wiki/Cosine_similarity" },
+    source: { label: "Cosine similarity, Wikipedia", href: "https://en.wikipedia.org/wiki/Cosine_similarity" },
   },
   {
     term: "Embedding",
@@ -39,9 +39,9 @@ const TERMS = [
   {
     term: "Fine-Tuning",
     definition:
-      "Further training an existing model on a smaller, specific dataset so it adapts to a narrower task — a different approach from RAG, which leaves the model unchanged and supplies context at answer time instead.",
+      "Further training an existing model on a smaller, specific dataset so it adapts to a narrower task, a different approach from RAG, which leaves the model unchanged and supplies context at answer time instead.",
     source: {
-      label: "Fine-tuning (deep learning) — Wikipedia",
+      label: "Fine-tuning (deep learning), Wikipedia",
       href: "https://en.wikipedia.org/wiki/Fine-tuning_(deep_learning)",
     },
   },
@@ -57,7 +57,7 @@ const TERMS = [
   {
     term: "HNSW",
     definition:
-      "Hierarchical Navigable Small World — an indexing structure that lets a vector database skip most of its stored data and still find near-perfect matches quickly. See Chapter 9.",
+      "Hierarchical Navigable Small World: an indexing structure that lets a vector database skip most of its stored data and still find near-perfect matches quickly. See Chapter 9.",
     source: {
       label: "Malkov & Yashunin, \"Efficient and Robust Approximate Nearest Neighbor Search Using HNSW Graphs\" (2016)",
       href: "https://arxiv.org/abs/1603.09320",
@@ -80,7 +80,7 @@ const TERMS = [
   {
     term: "ReAct",
     definition:
-      "Short for \"reason and act\" — the think, act, observe, repeat cycle an agent follows: decide what's needed, call a tool, read the result, and decide again. See Chapter 4.",
+      "Short for \"reason and act,\" the think, act, observe, repeat cycle an agent follows: decide what's needed, call a tool, read the result and decide again. See Chapter 4.",
     source: { label: "Yao et al., \"ReAct\" (2022)", href: "https://arxiv.org/abs/2210.03629" },
   },
   {
@@ -95,7 +95,7 @@ const TERMS = [
   {
     term: "ROUGE-L",
     definition:
-      "An evaluation metric that scores a candidate answer against a reference by the longest sequence of words they share, in order — a standard, cheap-to-compute signal used as one part of a larger evaluation pipeline. See Chapter 7.",
+      "An evaluation metric that scores a candidate answer against a reference by the longest sequence of words they share, in order, a standard, cheap-to-compute signal used as one part of a larger evaluation pipeline. See Chapter 7.",
     source: {
       label: "Lin, \"ROUGE: A Package for Automatic Evaluation of Summaries\" (2004)",
       href: "https://aclanthology.org/W04-1013/",
@@ -104,12 +104,12 @@ const TERMS = [
   {
     term: "Semantic Cache",
     definition:
-      "A cache that reuses a stored result whenever a new request's embedding is close enough (by cosine similarity) to a previous one, instead of requiring an exact text match — catching paraphrased repeat questions a plain cache would miss. See Chapter 6.",
+      "A cache that reuses a stored result whenever a new request's embedding is close enough (by cosine similarity) to a previous one, instead of requiring an exact text match, catching paraphrased repeat questions a plain cache would miss. See Chapter 6.",
   },
   {
     term: "Token",
     definition:
-      "A small piece of text — often a whole word or a few characters — that is the basic unit a language model reads and generates, one at a time, and the unit every hosted model bills by. See Chapters 1 and 2.",
+      "A small piece of text (often a whole word or a few characters) that is the basic unit a language model reads and generates, one at a time, and the unit every hosted model bills by. See Chapters 1 and 2.",
     source: {
       label: "Vaswani et al., \"Attention Is All You Need\" (2017)",
       href: "https://arxiv.org/abs/1706.03762",
@@ -118,13 +118,13 @@ const TERMS = [
   {
     term: "Tool",
     definition:
-      "A defined capability — a calculator, a search function, a request to another system — that an agent is allowed to call, along with a description of what it does and what input it expects. See Chapter 4.",
+      "A defined capability (a calculator, a search function, a request to another system) that an agent is allowed to call, along with a description of what it does and what input it expects. See Chapter 4.",
     source: { label: "Yao et al., \"ReAct\" (2022)", href: "https://arxiv.org/abs/2210.03629" },
   },
   {
     term: "TextRank",
     definition:
-      "A graph-based ranking algorithm that scores each sentence in a document by how similar it is to every other sentence, then keeps the highest-scoring ones as an extractive summary — the same random-walk idea behind PageRank, applied to sentences instead of web pages. See Chapter 5.",
+      "A graph-based ranking algorithm that scores each sentence in a document by how similar it is to every other sentence, then keeps the highest-scoring ones as an extractive summary, the same random-walk idea behind PageRank, applied to sentences instead of web pages. See Chapter 5.",
     source: {
       label: "Mihalcea & Tarau, \"TextRank: Bringing Order into Text\" (2004)",
       href: "https://aclanthology.org/W04-3252/",
@@ -142,9 +142,9 @@ const TERMS = [
   {
     term: "Vector Database",
     definition:
-      "A database built to store embeddings and quickly find the ones most similar to a given query, typically using an approximate index like HNSW at scale. See Chapters 3, 8, and 9.",
+      "A database built to store embeddings and quickly find the ones most similar to a given query, typically using an approximate index like HNSW at scale. See Chapters 3, 8 and 9.",
     source: {
-      label: "pgvector — open-source vector search for Postgres",
+      label: "pgvector, open-source vector search for Postgres",
       href: "https://github.com/pgvector/pgvector",
     },
   },

@@ -57,7 +57,7 @@ export default function CachePage() {
           >
             <textarea
               className="input min-h-[9rem] resize-y font-mono text-sm"
-              placeholder="One query per line — include a few paraphrases and a repeat to see it work…"
+              placeholder="One query per line: include a few paraphrases and a repeat to see it work…"
               value={queriesText}
               onChange={(e) => setQueriesText(e.target.value)}
               disabled={loading}
@@ -136,7 +136,7 @@ export default function CachePage() {
       <TextbookPage eyebrow="Chapter 6" title="Semantic Caching" pageNumber="Page 6">
         <p>
           Chapter 1 put a real number on every request to a hosted model. The cheapest possible
-          request is one that never has to be made at all — and a <strong>cache</strong> is the
+          request is one that never has to be made at all, and a <strong>cache</strong> is the
           standard way to avoid making it. A plain cache only helps when a new request's text
           matches a previous one exactly, character for character. Real user traffic rarely
           cooperates: two people asking "What is the Model Context Protocol?" and "Can you explain
@@ -148,18 +148,18 @@ export default function CachePage() {
         </h2>
         <p>
           A <strong>semantic cache</strong> fixes this by keying on meaning instead of exact text:
-          each incoming query is embedded — the same technique from Chapter 3 — and compared by
+          each incoming query is embedded (the same technique from Chapter 3) and compared by
           cosine similarity against every embedding already sitting in the cache. If the closest
           match clears a similarity threshold, it's treated as the same question and the cached
           result is reused; the model is never called at all. If nothing clears the threshold, the
-          query is a genuine miss, gets embedded, and is added to the cache for future queries to
+          query is a genuine miss, gets embedded and is added to the cache for future queries to
           match against.
         </p>
         <p>
           Try the sample query stream above: the second query is a paraphrase of the first and
           still misses at the default threshold (this app's hash-based embeddings capture shared
-          words well but not true synonymy — see Chapter 3's honest limitation on this), while the
-          fourth query — an exact repeat of the first — hits immediately. A production system using
+          words well but not true synonymy; see Chapter 3's honest limitation on this), while the
+          fourth query, an exact repeat of the first, hits immediately. A production system using
           real semantic embeddings would catch the paraphrase too; lowering the threshold here
           shows roughly what that looks like.
         </p>
@@ -167,8 +167,8 @@ export default function CachePage() {
         <Analogy>
           A plain cache is a librarian who only recognizes a book by its exact title typed
           correctly. A semantic cache is a librarian who recognizes what you're actually asking
-          for, even if you phrase it differently each time — "the crown recovery book," "that
-          fantasy quest thing," "the one with Elowen in it" — and hands you the same book each time
+          for, even if you phrase it differently each time: "the crown recovery book," "that
+          fantasy quest thing," "the one with Elowen in it," and hands you the same book each time
           without needing to hear the exact same words twice.
         </Analogy>
 
@@ -176,7 +176,7 @@ export default function CachePage() {
           <span className="text-brand-600">6.2</span> The Threshold Is a Real Trade-off
         </h2>
         <p>
-          Set the threshold too low, and unrelated questions start getting the same cached answer —
+          Set the threshold too low, and unrelated questions start getting the same cached answer:
           a correctness problem, not just an efficiency one. Set it too high, and near-duplicate
           questions stop matching, and the cache barely saves anything. There's no universally
           correct value; production systems tune it against real traffic and measured accuracy loss,
@@ -186,11 +186,11 @@ export default function CachePage() {
         <Sources
           items={[
             {
-              label: "Cosine similarity — Wikipedia (the same similarity measure Chapter 3's retrieval uses)",
+              label: "Cosine similarity, Wikipedia (the same similarity measure Chapter 3's retrieval uses)",
               href: "https://en.wikipedia.org/wiki/Cosine_similarity",
             },
             {
-              label: "Anthropic — official Claude API pricing, including prompt-caching discount rates",
+              label: "Anthropic, official Claude API pricing, including prompt-caching discount rates",
               href: "https://platform.claude.com/docs/en/about-claude/pricing",
             },
           ]}

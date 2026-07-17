@@ -1,12 +1,12 @@
 """
-Semantic caching — instead of only reusing a cached response when a new
+Semantic caching: instead of only reusing a cached response when a new
 request's text matches a previous one *exactly*, a semantic cache reuses
 it whenever the new request's embedding is close enough (by cosine
 similarity) to a previous one already in the cache, catching paraphrases
 and near-duplicates that a plain string-match cache would miss entirely.
 Production LLM systems lean on this heavily: a cache hit skips the model
 call completely, at whatever the going per-token rate happens to be (see
-tokenizer.py) — one of the highest-leverage, lowest-effort cost
+tokenizer.py), one of the highest-leverage, lowest-effort cost
 optimizations available once a system is handling real traffic.
 
 This demo processes a list of queries in order against a running,
