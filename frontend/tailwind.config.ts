@@ -14,10 +14,19 @@ const config: Config = {
           600: "#5541d6",
           900: "#241f4d",
         },
+        paper: {
+          DEFAULT: "#f6f1e4",
+          dark: "#ece4d0",
+          ink: "#2b2620",
+        },
+      },
+      fontFamily: {
+        display: ["var(--font-display)", "serif"],
+        serif: ["var(--font-body)", "serif"],
       },
     },
   },
-  plugins: [],
+  plugins: [require("@tailwindcss/typography")],
 };
 
 export default config;

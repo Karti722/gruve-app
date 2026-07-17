@@ -15,6 +15,17 @@ async function postJson<T>(path: string, body: unknown): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+async function getJson<T>(path: string): Promise<T> {
+  const res = await fetch(`${API_BASE_URL}${path}`);
+
+  if (!res.ok) {
+    const errorBody = await res.json().catch(() => ({}));
+    throw new Error(errorBody.error ?? `Request to ${path} failed with status ${res.status}`);
+  }
+
+  return res.json() as Promise<T>;
+}
+
 export interface ChatMessage {
   role: "user" | "assistant";
   content: string;
@@ -32,6 +43,7 @@ export function sendChatMessage(message: string, history: ChatMessage[]): Promis
 export interface RagSource {
   citation: number;
   source: string;
+  title: string;
   text: string;
   similarity: number;
 }
@@ -44,6 +56,23 @@ export interface RagResponse {
 
 export function queryRag(question: string): Promise<RagResponse> {
   return postJson<RagResponse>("/api/rag/query", { question });
+}
+
+export interface KnowledgeBaseSource {
+  source: string;
+  title: string;
+}
+
+export function listKnowledgeBaseSources(): Promise<{ sources: KnowledgeBaseSource[] }> {
+  return getJson<{ sources: KnowledgeBaseSource[] }>("/api/rag/sources");
+}
+
+export interface KnowledgeBaseArticle extends KnowledgeBaseSource {
+  content: string;
+}
+
+export function getKnowledgeBaseSource(source: string): Promise<KnowledgeBaseArticle> {
+  return getJson<KnowledgeBaseArticle>(`/api/rag/sources/${encodeURIComponent(source)}`);
 }
 
 export interface AgentTraceStep {

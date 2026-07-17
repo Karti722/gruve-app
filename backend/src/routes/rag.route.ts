@@ -3,6 +3,7 @@ import { config } from "../config";
 import { llmClient } from "../llm";
 import { buildRagPrompt } from "../prompts/systemPrompts";
 import { embedTexts } from "../rag/embeddingsClient";
+import { getKnowledgeBaseTitle, listKnowledgeBaseFiles, readKnowledgeBaseFile } from "../rag/knowledgeBaseFiles";
 import { searchSimilar } from "../rag/vectorStore";
 import { describeError } from "../utils/errors";
 
@@ -36,6 +37,7 @@ ragRouter.post("/query", async (req, res) => {
       sources: matches.map((m, i) => ({
         citation: i + 1,
         source: m.source,
+        title: getKnowledgeBaseTitle(m.source),
         text: m.text,
         similarity: Number(m.score.toFixed(3)),
       })),
@@ -45,4 +47,25 @@ ragRouter.post("/query", async (req, res) => {
     console.error("[rag] error:", err);
     res.status(500).json({ error: `Failed to answer the question: ${describeError(err)}` });
   }
+});
+
+/**
+ * GET /api/rag/sources
+ * Lists every article in the knowledge base (id + display title) so the
+ * frontend can offer a "browse the knowledge base yourself" picker.
+ */
+ragRouter.get("/sources", (_req, res) => {
+  res.json({ sources: listKnowledgeBaseFiles() });
+});
+
+/**
+ * GET /api/rag/sources/:source
+ * Full content of a single knowledge-base article, for the same browser.
+ */
+ragRouter.get("/sources/:source", (req, res) => {
+  const file = readKnowledgeBaseFile(req.params.source);
+  if (!file) {
+    return res.status(404).json({ error: "That knowledge base article doesn't exist." });
+  }
+  res.json(file);
 });

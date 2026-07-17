@@ -3,6 +3,9 @@
 import { useState } from "react";
 import { queryRag, type RagSource } from "@/lib/api";
 import { SourceCitation } from "@/components/SourceCitation";
+import { KnowledgeBaseBrowser } from "@/components/KnowledgeBaseBrowser";
+import { Analogy } from "@/components/Analogy";
+import { TextbookPage } from "@/components/TextbookPage";
 
 const SAMPLE_QUESTIONS = [
   "What is the Model Context Protocol?",
@@ -36,80 +39,149 @@ export default function RagPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-white">Retrieval-Augmented Generation</h1>
-        <p className="mt-1 text-white/60">
-          Your question is embedded, matched against a vector store (seeded from the markdown docs
-          in <code className="rounded bg-white/10 px-1.5 py-0.5">backend/data/knowledge-base</code>)
-          via cosine similarity, then answered strictly from the retrieved passages with citations.
-        </p>
-      </div>
+    <div className="space-y-10">
+      <div className="space-y-3">
+        <h2 className="font-display text-xs font-bold uppercase tracking-[0.2em] text-paper-ink/50">
+          Try it yourself
+        </h2>
 
-      <div className="card space-y-4">
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            runQuery(question);
-          }}
-          className="flex gap-2"
-        >
-          <input
-            className="input"
-            placeholder="Ask about LLMs, RAG, agents, MCP, vector DBs…"
-            value={question}
-            onChange={(e) => setQuestion(e.target.value)}
-            disabled={loading}
-          />
-          <button type="submit" className="btn-primary" disabled={loading || !question.trim()}>
-            Ask
-          </button>
-        </form>
-
-        <div className="flex flex-wrap gap-2">
-          {SAMPLE_QUESTIONS.map((q) => (
-            <button
-              key={q}
-              onClick={() => {
-                setQuestion(q);
-                runQuery(q);
-              }}
-              className="pill transition hover:bg-white/10"
-              type="button"
-            >
-              {q}
+        <div className="card space-y-4">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              runQuery(question);
+            }}
+            className="flex gap-2"
+          >
+            <input
+              className="input"
+              placeholder="Ask about LLMs, RAG, agents, MCP, vector DBs…"
+              value={question}
+              onChange={(e) => setQuestion(e.target.value)}
+              disabled={loading}
+            />
+            <button type="submit" className="btn-primary" disabled={loading || !question.trim()}>
+              Ask
             </button>
-          ))}
+          </form>
+
+          <div>
+            <p className="font-display text-xs font-bold uppercase tracking-wide text-paper-ink/40">
+              Try asking
+            </p>
+            <ol className="mt-2 space-y-1.5 text-sm">
+              {SAMPLE_QUESTIONS.map((q, i) => (
+                <li key={q}>
+                  <button
+                    onClick={() => {
+                      setQuestion(q);
+                      runQuery(q);
+                    }}
+                    className="text-left leading-relaxed text-paper-ink/70 underline decoration-paper-ink/25 decoration-dotted underline-offset-4 transition hover:text-brand-700 hover:decoration-brand-500"
+                    type="button"
+                  >
+                    {i + 1}. {q}
+                  </button>
+                </li>
+              ))}
+            </ol>
+          </div>
         </div>
+
+        {loading && <p className="text-sm italic text-paper-ink/40">Searching for relevant passages…</p>}
+        {error && <p className="text-sm text-red-600">Error: {error}</p>}
+
+        {answer && (
+          <div className="space-y-4">
+            <div className="card">
+              <div className="mb-2 flex items-center justify-between border-b border-paper-ink/10 pb-2">
+                <h3 className="font-display text-xs font-bold uppercase tracking-[0.2em] text-paper-ink/50">
+                  Answer
+                </h3>
+                {mockMode !== null && (
+                  <span className={`pill ${mockMode ? "text-amber-700" : "text-emerald-700"}`}>
+                    {mockMode ? "MOCK MODE" : "LIVE · Anthropic"}
+                  </span>
+                )}
+              </div>
+              <p className="whitespace-pre-wrap text-[15px] leading-relaxed text-paper-ink/90">
+                {answer}
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <h3 className="font-display text-xs font-bold uppercase tracking-[0.2em] text-paper-ink/50">
+                Retrieved sources
+              </h3>
+              {sources.map((s) => (
+                <SourceCitation key={s.citation} source={s} />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
-      {loading && <p className="text-sm text-white/40">Embedding query, searching knowledge base…</p>}
-      {error && <p className="text-sm text-red-400">Error: {error}</p>}
+      <div className="space-y-3">
+        <h2 className="font-display text-xs font-bold uppercase tracking-[0.2em] text-paper-ink/50">
+          Read the source material
+        </h2>
+        <KnowledgeBaseBrowser />
+      </div>
 
-      {answer && (
-        <div className="space-y-4">
-          <div className="card">
-            <div className="mb-2 flex items-center justify-between">
-              <h2 className="font-semibold text-white">Answer</h2>
-              {mockMode !== null && (
-                <span className={`pill ${mockMode ? "text-amber-300" : "text-emerald-300"}`}>
-                  {mockMode ? "MOCK MODE" : "LIVE · Anthropic"}
-                </span>
-              )}
-            </div>
-            <p className="whitespace-pre-wrap text-sm leading-relaxed text-white/90">{answer}</p>
-          </div>
+      <TextbookPage
+        eyebrow="Chapter 2"
+        title="Retrieval-Augmented Generation (RAG)"
+        pageNumber="Page 2"
+      >
+        <p>
+          A language model's knowledge is frozen at whatever point its training data was collected,
+          and it has no built-in way to consult anything outside that data. This creates two related
+          problems: it cannot answer accurately about information that didn't exist at training
+          time, or that was never public in the first place, and when asked about something it
+          doesn't actually know, it tends to produce a confident, fluent-sounding answer anyway — a
+          failure mode usually called hallucination, since the model isn't lying so much as filling
+          a gap the only way it knows how.
+        </p>
 
-          <div className="space-y-3">
-            <h3 className="text-sm font-semibold uppercase tracking-wide text-white/50">
-              Retrieved sources
-            </h3>
-            {sources.map((s) => (
-              <SourceCitation key={s.citation} source={s} />
-            ))}
-          </div>
-        </div>
-      )}
+        <p>
+          Retrieval-Augmented Generation, or RAG, addresses this by splitting the task into two
+          stages instead of relying on the model alone. A <em>retrieval</em> stage first searches a
+          separate collection of documents for the passages most relevant to the question being
+          asked. A <em>generation</em> stage then hands those retrieved passages to the language
+          model as part of its instructions, alongside the original question, and asks it to answer
+          using only that supplied material. The model is no longer answering purely from memory —
+          it's reading source material at the moment it responds, the same way a person might check
+          a reference before answering rather than guessing.
+        </p>
+
+        <p>
+          The retrieval stage itself works through embeddings. An embedding is a list of numbers
+          that represents the meaning of a piece of text as a position in a high-dimensional space,
+          produced by a model trained so that texts with similar meaning end up positioned close
+          together, and unrelated texts end up far apart. Every passage in the document collection
+          is converted into an embedding once, ahead of time, and stored. When a question arrives,
+          it's converted into an embedding the same way, and the system finds the passages whose
+          embeddings sit closest to the question's — typically using cosine similarity, a measure
+          of how closely two of these positions point in the same direction. The closest matches are
+          the passages judged most relevant.
+        </p>
+
+        <Analogy>
+          Think of an embedding as a coordinate on a map, except the map represents meaning instead
+          of geography. Passages about closely related ideas land near each other on this map, and
+          unrelated passages land far apart — the same way two towns close together on an ordinary
+          map tend to be a short drive apart, while towns on opposite coasts aren't. Searching by
+          embedding is like asking "what's nearby?" instead of demanding an exact-word match.
+        </Analogy>
+
+        <p>
+          Finally, the model is instructed to answer strictly from the retrieved passages and to
+          cite which passage supports each part of its answer, so instead of taking the response on
+          faith, you can check exactly where each claim came from. That's what you should have just
+          seen above: the answer itself, and the numbered source passages underneath it that were
+          retrieved to produce that answer.
+        </p>
+      </TextbookPage>
     </div>
   );
 }
