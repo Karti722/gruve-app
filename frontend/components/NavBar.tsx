@@ -8,6 +8,8 @@ const LINKS = [
   { href: "/chat", label: "LLM Chat", chapter: "Ch. 1" },
   { href: "/rag", label: "RAG", chapter: "Ch. 2" },
   { href: "/agent", label: "AI Agent + MCP", chapter: "Ch. 3" },
+  { href: "/enterprise", label: "Enterprise Use", chapter: "Ch. 4" },
+  { href: "/architecture", label: "Architecture", chapter: "Ch. 5" },
 ];
 
 export function NavBar() {
@@ -23,7 +25,7 @@ export function NavBar() {
           <span className="inline-block h-2.5 w-2.5 rounded-full bg-brand-500" />
           AI Nexus
         </Link>
-        <nav className="flex gap-1">
+        <nav className="flex flex-wrap justify-end gap-1">
           {LINKS.map((link) => {
             const active = pathname === link.href;
             return (

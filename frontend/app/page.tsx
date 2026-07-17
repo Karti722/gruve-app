@@ -19,6 +19,18 @@ const CHAPTERS = [
     title: "AI Agents and Tool Use",
     description: "Watching an AI decide, act, and use outside tools on its own.",
   },
+  {
+    number: "Chapter 4",
+    href: "/enterprise",
+    title: "These Concepts in the Real World",
+    description: "Real companies, real numbers: how this stuff is actually used at scale.",
+  },
+  {
+    number: "Chapter 5",
+    href: "/architecture",
+    title: "How This Tutorial Is Built",
+    description: "A behind-the-scenes tour of the system running these five chapters.",
+  },
 ];
 
 export default function HomePage() {
