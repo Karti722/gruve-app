@@ -10,7 +10,7 @@ const TERMS = [
   {
     term: "API",
     definition:
-      "A defined way for two programs to talk to each other over a network without either needing to know how the other is built internally. See Chapter 5.",
+      "A defined way for two programs to talk to each other over a network without either needing to know how the other is built internally. See Chapter 6.",
   },
   {
     term: "Cosine Similarity",
@@ -48,7 +48,7 @@ const TERMS = [
   {
     term: "HNSW",
     definition:
-      "Hierarchical Navigable Small World — an indexing structure that lets a vector database skip most of its stored data and still find near-perfect matches quickly. See Chapter 5.",
+      "Hierarchical Navigable Small World — an indexing structure that lets a vector database skip most of its stored data and still find near-perfect matches quickly. See Chapter 6.",
     source: {
       label: "Malkov & Yashunin, \"Efficient and Robust Approximate Nearest Neighbor Search Using HNSW Graphs\" (2016)",
       href: "https://arxiv.org/abs/1603.09320",
@@ -66,7 +66,7 @@ const TERMS = [
   {
     term: "Microservices",
     definition:
-      "An architecture that splits an application into small, independent programs, each with one job, communicating over the network instead of sharing internal state. See Chapter 5.",
+      "An architecture that splits an application into small, independent programs, each with one job, communicating over the network instead of sharing internal state. See Chapter 6.",
   },
   {
     term: "ReAct",
@@ -99,9 +99,27 @@ const TERMS = [
     source: { label: "Yao et al., \"ReAct\" (2022)", href: "https://arxiv.org/abs/2210.03629" },
   },
   {
+    term: "TextRank",
+    definition:
+      "A graph-based ranking algorithm that scores each sentence in a document by how similar it is to every other sentence, then keeps the highest-scoring ones as an extractive summary — the same random-walk idea behind PageRank, applied to sentences instead of web pages. See Chapter 4.",
+    source: {
+      label: "Mihalcea & Tarau, \"TextRank: Bringing Order into Text\" (2004)",
+      href: "https://aclanthology.org/W04-3252/",
+    },
+  },
+  {
+    term: "TF-IDF (Term Frequency)",
+    definition:
+      "A term-weighting scheme from information retrieval: words that occur often in a specific document, once common function words are filtered out, are a good signal of what that document is about. The keyword extraction in Chapter 4 uses the \"term frequency\" half of this idea.",
+    source: {
+      label: "Spärck Jones, \"A Statistical Interpretation of Term Specificity and Its Application in Retrieval\" (1972)",
+      href: "https://www.emeraldinsight.com/doi/10.1108/eb026526",
+    },
+  },
+  {
     term: "Vector Database",
     definition:
-      "A database built to store embeddings and quickly find the ones most similar to a given query, typically using an approximate index like HNSW at scale. See Chapters 2, 4, and 5.",
+      "A database built to store embeddings and quickly find the ones most similar to a given query, typically using an approximate index like HNSW at scale. See Chapters 2, 5, and 6.",
     source: {
       label: "pgvector — open-source vector search for Postgres",
       href: "https://github.com/pgvector/pgvector",
@@ -114,7 +132,7 @@ export default function GlossaryPage() {
     <div className="space-y-10">
       <TextbookPage eyebrow="Reference" title="Glossary of Key Terms" pageNumber="Glossary">
         <p>
-          Every term introduced across the six chapters of this tutorial, gathered in one place.
+          Every term introduced across the seven chapters of this tutorial, gathered in one place.
           Each entry links back to the chapter where it's explained in full, and to a real source
           where one exists.
         </p>

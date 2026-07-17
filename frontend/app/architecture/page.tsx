@@ -6,7 +6,7 @@ import { Sources } from "@/components/Sources";
 export default function ArchitecturePage() {
   return (
     <div className="space-y-10">
-      <TextbookPage eyebrow="Chapter 5" title="The System Behind This Tutorial" pageNumber="Page 5">
+      <TextbookPage eyebrow="Chapter 6" title="The System Behind This Tutorial" pageNumber="Page 6">
         <p>
           Every chapter so far has explained a concept and then let you try it. This chapter turns
           the lens on the tutorial itself: what's actually running behind these pages, and why it's
@@ -16,7 +16,7 @@ export default function ArchitecturePage() {
         </p>
 
         <h2 className="font-display text-lg font-bold text-paper-ink">
-          <span className="text-brand-600">5.1</span> Four Small Programs, Not One Big One
+          <span className="text-brand-600">6.1</span> Four Small Programs, Not One Big One
         </h2>
         <p>
           This tutorial isn't a single program. It's four small ones, each responsible for exactly
@@ -29,7 +29,7 @@ export default function ArchitecturePage() {
         <ArchitectureDiagram />
 
         <h2 className="font-display text-lg font-bold text-paper-ink">
-          <span className="text-brand-600">5.2</span> The Interface
+          <span className="text-brand-600">6.2</span> The Interface
         </h2>
         <p>
           This is the part you're reading right now — the pages, the text, the forms you type into.
@@ -48,7 +48,7 @@ export default function ArchitecturePage() {
         </p>
 
         <h2 className="font-display text-lg font-bold text-paper-ink">
-          <span className="text-brand-600">5.3</span> The Orchestrator
+          <span className="text-brand-600">6.3</span> The Orchestrator
         </h2>
         <p>
           Sitting behind the interface is an API server — a program whose only job is to receive
@@ -67,7 +67,7 @@ export default function ArchitecturePage() {
         </p>
 
         <h2 className="font-display text-lg font-bold text-paper-ink">
-          <span className="text-brand-600">5.4</span> Grounding Answers
+          <span className="text-brand-600">6.4</span> Grounding Answers
         </h2>
         <p>
           The RAG chapter's vector database is real: PostgreSQL (a general-purpose database) with an
@@ -76,15 +76,17 @@ export default function ArchitecturePage() {
         </p>
         <p>
           Turning text into the embeddings that database stores is handled by a separate, small
-          Python service, using a framework called FastAPI. It's kept separate on purpose: Python is
-          where most machine-learning tooling lives, so isolating that one concern to its own service
-          means it can use whatever tools that ecosystem offers without pulling the rest of the
-          system into Python along with it — the same "different languages for different jobs"
-          reasoning any polyglot system uses.
+          Python service, using a framework called FastAPI. That same service also powers Chapter
+          4's summarization demo, since ranking sentences by similarity uses the exact same
+          embeddings underneath. Keeping it separate is deliberate: Python is where most
+          machine-learning tooling lives, so isolating that concern to its own service means it can
+          use whatever tools that ecosystem offers without pulling the rest of the system into
+          Python along with it — the same "different languages for different jobs" reasoning any
+          polyglot system uses.
         </p>
 
         <h2 className="font-display text-lg font-bold text-paper-ink">
-          <span className="text-brand-600">5.5</span> Taking Action
+          <span className="text-brand-600">6.5</span> Taking Action
         </h2>
         <p>
           The tool server from Chapter 3 is not a simulated feature living inside the orchestrator —
@@ -104,7 +106,7 @@ export default function ArchitecturePage() {
 
         <p>
           Four small programs, one job each, talking over well-defined connections instead of
-          sharing internal state — the same shape the real companies in Chapter 4 run at a much
+          sharing internal state — the same shape the real companies in Chapter 5 run at a much
           larger scale, just small enough here to read in one sitting.
         </p>
 

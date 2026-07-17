@@ -92,3 +92,28 @@ export interface AgentResponse {
 export function runAgent(message: string, useMcp: boolean): Promise<AgentResponse> {
   return postJson<AgentResponse>("/api/agent/run", { message, useMcp });
 }
+
+export interface RankedSentence {
+  text: string;
+  index: number;
+  score: number;
+}
+
+export interface ReadabilityScore {
+  fleschReadingEase: number;
+  fleschKincaidGrade: number;
+  wordCount: number;
+  sentenceCount: number;
+}
+
+export interface SummarizeResponse {
+  sentences: RankedSentence[];
+  totalSentences: number;
+  keywords: string[];
+  originalReadability: ReadabilityScore;
+  summaryReadability: ReadabilityScore;
+}
+
+export function summarizeText(text: string, sentenceCount: number): Promise<SummarizeResponse> {
+  return postJson<SummarizeResponse>("/api/summarize", { text, sentenceCount });
+}

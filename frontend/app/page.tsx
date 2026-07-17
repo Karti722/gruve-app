@@ -21,18 +21,24 @@ const CHAPTERS = [
   },
   {
     number: "Chapter 4",
+    href: "/summarize",
+    title: "Automatic Text Summarization",
+    description: "Ranking a document's own sentences to condense it, without inventing a word.",
+  },
+  {
+    number: "Chapter 5",
     href: "/enterprise",
     title: "These Concepts in the Real World",
     description: "Real companies, real numbers: how this stuff is actually used at scale.",
   },
   {
-    number: "Chapter 5",
+    number: "Chapter 6",
     href: "/architecture",
     title: "The System Behind This Tutorial",
     description: "A behind-the-scenes tour of the system running these chapters.",
   },
   {
-    number: "Chapter 6",
+    number: "Chapter 7",
     href: "/building",
     title: "How This Tutorial Was Built",
     description: "The story of how an AI coding assistant and a person built this, together.",

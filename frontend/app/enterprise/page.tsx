@@ -5,7 +5,7 @@ import { Sources } from "@/components/Sources";
 export default function EnterprisePage() {
   return (
     <div className="space-y-10">
-      <TextbookPage eyebrow="Chapter 4" title="These Concepts in the Real World" pageNumber="Page 4">
+      <TextbookPage eyebrow="Chapter 5" title="These Concepts in the Real World" pageNumber="Page 5">
         <p>
           Everything covered in the first three chapters — a conversation with a model, retrieval
           grounding an answer in real documents, an agent deciding which tool to reach for — isn't
@@ -16,7 +16,7 @@ export default function EnterprisePage() {
         </p>
 
         <h2 className="font-display text-lg font-bold text-paper-ink">
-          <span className="text-brand-600">4.1</span> Conversational AI
+          <span className="text-brand-600">5.1</span> Conversational AI
         </h2>
         <p>
           The plain chat interface from Chapter 1 is the most direct route into a business:
@@ -48,7 +48,7 @@ export default function EnterprisePage() {
         </CaseStudy>
 
         <h2 className="font-display text-lg font-bold text-paper-ink">
-          <span className="text-brand-600">4.2</span> Retrieval-Augmented Generation
+          <span className="text-brand-600">5.2</span> Retrieval-Augmented Generation
         </h2>
         <p>
           RAG's enterprise appeal is almost entirely about trust and access control. A general-purpose
@@ -73,7 +73,7 @@ export default function EnterprisePage() {
         </CaseStudy>
 
         <h2 className="font-display text-lg font-bold text-paper-ink">
-          <span className="text-brand-600">4.3</span> Vector Databases at Scale
+          <span className="text-brand-600">5.3</span> Vector Databases at Scale
         </h2>
         <p>
           The demo in Chapter 2 searches a few dozen chunks of text — small enough that almost any
@@ -97,7 +97,7 @@ export default function EnterprisePage() {
         </CaseStudy>
 
         <h2 className="font-display text-lg font-bold text-paper-ink">
-          <span className="text-brand-600">4.4</span> AI Agents and Autonomous Tool Use
+          <span className="text-brand-600">5.4</span> AI Agents and Autonomous Tool Use
         </h2>
         <p>
           Agents earn their keep wherever a task is better described as "go accomplish this" than
@@ -123,7 +123,7 @@ export default function EnterprisePage() {
         </CaseStudy>
 
         <h2 className="font-display text-lg font-bold text-paper-ink">
-          <span className="text-brand-600">4.5</span> The Model Context Protocol
+          <span className="text-brand-600">5.5</span> The Model Context Protocol
         </h2>
         <p>
           MCP is the youngest of these five patterns — Anthropic introduced it in November 2024 —

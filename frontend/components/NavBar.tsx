@@ -9,9 +9,10 @@ const LINKS = [
   { href: "/chat", label: "LLM Chat", chapter: "Ch. 1" },
   { href: "/rag", label: "RAG", chapter: "Ch. 2" },
   { href: "/agent", label: "AI Agent + MCP", chapter: "Ch. 3" },
-  { href: "/enterprise", label: "Enterprise Use", chapter: "Ch. 4" },
-  { href: "/architecture", label: "Architecture", chapter: "Ch. 5" },
-  { href: "/building", label: "How This Was Built", chapter: "Ch. 6" },
+  { href: "/summarize", label: "Summarization", chapter: "Ch. 4" },
+  { href: "/enterprise", label: "Enterprise Use", chapter: "Ch. 5" },
+  { href: "/architecture", label: "Architecture", chapter: "Ch. 6" },
+  { href: "/building", label: "How This Was Built", chapter: "Ch. 7" },
   { href: "/glossary", label: "Glossary" },
 ];
 

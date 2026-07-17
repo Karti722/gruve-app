@@ -4,11 +4,11 @@ import { Analogy } from "@/components/Analogy";
 export default function BuildingPage() {
   return (
     <div className="space-y-10">
-      <TextbookPage eyebrow="Chapter 6" title="How This Tutorial Was Built" pageNumber="Page 6">
+      <TextbookPage eyebrow="Chapter 7" title="How This Tutorial Was Built" pageNumber="Page 7">
         <p>
-          Chapter 5 walked through what runs behind these pages. This one is about how it came to
+          Chapter 6 walked through what runs behind these pages. This one is about how it came to
           exist in the first place: every chapter, every diagram, and every part of the system
-          described in Chapter 5 was built through an extended conversation between a person and an
+          described in Chapter 6 was built through an extended conversation between a person and an
           AI coding assistant — the same agent pattern taught in Chapter 3, pointed at a real
           codebase instead of a calculator.
         </p>
@@ -45,7 +45,7 @@ export default function BuildingPage() {
         <p>
           None of this should be read as "no one designed this." Every structural decision — what to
           teach and in what order, what to explain about the system versus keep simple, which
-          real-world examples in Chapter 4 were credible enough to include — was made by a person,
+          real-world examples in Chapter 5 were credible enough to include — was made by a person,
           checked against real sources where it mattered, and revised repeatedly until it was right.
           The assistant did the typing. The judgment stayed human.
         </p>

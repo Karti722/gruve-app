@@ -3,6 +3,7 @@ import express from "express";
 import { agentRouter } from "./routes/agent.route";
 import { chatRouter } from "./routes/chat.route";
 import { ragRouter } from "./routes/rag.route";
+import { summarizeRouter } from "./routes/summarize.route";
 import { config } from "./config";
 import { seedKnowledgeBaseIfEmpty } from "./rag/seedDocuments";
 
@@ -18,6 +19,7 @@ app.get("/api/health", (_req, res) => {
 app.use("/api/chat", chatRouter);
 app.use("/api/rag", ragRouter);
 app.use("/api/agent", agentRouter);
+app.use("/api/summarize", summarizeRouter);
 
 async function main() {
   await seedKnowledgeBaseIfEmpty();
