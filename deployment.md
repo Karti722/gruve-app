@@ -36,12 +36,31 @@ image. Deploy the backend first, then build the frontend pointing at that URL.
 | `PYTHON_EMBEDDING_SERVICE_URL` | backend | `python-service`'s **internal** URL (e.g. `http://python-service.internal:8001`) |
 | `POSTGRES_URL` | backend | `postgresql://user:pass@<managed-postgres-host>:5432/nexus_vectors` |
 | `MCP_SERVER_ENTRY` | backend | `/app/mcp-server/dist/index.js` (already the default baked into the backend image — see `backend/Dockerfile`) |
+| `FRONTEND_URL` | backend | frontend's public HTTPS URL — **set this *after* deploying the frontend** (see the circular-dependency note below) |
 | `EMBEDDING_SERVICE_PORT` | python-service | `8001` |
 | `NEXT_PUBLIC_API_BASE_URL` | frontend (**build-time**) | backend's public HTTPS URL |
 
 None of these need code changes to deploy — they're all already read from `process.env` /
 `os.environ` (see `backend/src/config.ts`, `python-service/app/main.py`,
 `frontend/lib/api.ts`).
+
+### The backend ↔ frontend URL is circular — deploy in two passes
+
+`NEXT_PUBLIC_API_BASE_URL` (frontend) and `FRONTEND_URL` (backend) each need to know the *other*
+service's public URL, but neither URL exists until that service is deployed. Break the cycle like
+this:
+
+1. Deploy `backend` first with `FRONTEND_URL` left at its local default (or omitted) — it'll
+   reject browser calls from the not-yet-deployed frontend, which is fine, nothing is calling it
+   yet.
+2. Build and deploy `frontend` with `NEXT_PUBLIC_API_BASE_URL` set to the backend's now-known
+   public URL (this is already required — see each cloud's "Frontend" step below).
+3. Update `backend`'s `FRONTEND_URL` to the frontend's now-known public URL and redeploy/restart
+   just the backend service (a config-only redeploy, no rebuild needed). Each cloud section below
+   has the one-line command for this.
+
+`FRONTEND_URL` accepts a comma-separated list, so you can include a staging URL alongside
+production without another deploy.
 
 ---
 
@@ -142,7 +161,21 @@ docker build -f frontend/Dockerfile \
 near the top of `frontend/Dockerfile`'s build stage if you want this as a build arg rather than
 editing `.env` before building — Next.js inlines `NEXT_PUBLIC_*` vars at build time either way.)
 
-**Simpler alternative:** for a demo/low-traffic deployment, **AWS App Runner** does steps 2.1–2.5
+### 2.6 Point the backend's CORS policy at the deployed frontend
+Add `FRONTEND_URL` to the task definition's `environment` array from step 2.4 (alongside `PORT`
+and `PYTHON_EMBEDDING_SERVICE_URL`):
+```json
+{ "name": "FRONTEND_URL", "value": "https://app.yourdomain.com" }
+```
+Task definitions are immutable, so register the edited JSON as a new revision and point the
+service at it — this is a config-only redeploy, no image rebuild needed:
+```bash
+aws ecs register-task-definition --cli-input-json file://backend-task.json
+aws ecs update-service --cluster ai-nexus-cluster --service ai-nexus-backend \
+  --task-definition ai-nexus-backend --force-new-deployment
+```
+
+**Simpler alternative:** for a demo/low-traffic deployment, **AWS App Runner** does steps 2.1–2.6
 with far less configuration — point it at an ECR image, give it env vars/secrets, and it handles
 the load balancer, HTTPS, and scaling itself. Worth using instead of ECS+ALB unless you need ECS's
 finer-grained control.
@@ -232,6 +265,15 @@ az containerapp create \
   --ingress external --target-port 3000
 ```
 
+### 3.6 Point the backend's CORS policy at the deployed frontend
+Unlike GCP's `--set-env-vars` (see 4.6), Container Apps' `--set-env-vars` on `update` only adds/
+overwrites the named variable(s) — it doesn't clear the others set in 3.4, so no extra flag needed:
+```bash
+az containerapp update \
+  --name backend --resource-group ai-nexus-rg \
+  --set-env-vars FRONTEND_URL=https://frontend.<random>.eastus.azurecontainerapps.io
+```
+
 ---
 
 ## 4. GCP — Cloud Run + Cloud SQL for PostgreSQL + Artifact Registry
@@ -301,6 +343,16 @@ docker push us-central1-docker.pkg.dev/<project-id>/ai-nexus/frontend:latest
 gcloud run deploy frontend \
   --image us-central1-docker.pkg.dev/<project-id>/ai-nexus/frontend:latest \
   --region us-central1 --allow-unauthenticated --port 3000
+```
+
+### 4.6 Point the backend's CORS policy at the deployed frontend
+Use `--update-env-vars` here, not `--set-env-vars` — `--set-env-vars` replaces the *entire*
+environment variable list, which would wipe out `PORT`/`PYTHON_EMBEDDING_SERVICE_URL` from step
+4.4. `--update-env-vars` only touches the key(s) you name:
+```bash
+gcloud run services update backend \
+  --region us-central1 \
+  --update-env-vars FRONTEND_URL=$(gcloud run services describe frontend --region us-central1 --format 'value(status.url)')
 ```
 
 ---

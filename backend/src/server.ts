@@ -8,7 +8,7 @@ import { seedKnowledgeBaseIfEmpty } from "./rag/seedDocuments";
 
 const app = express();
 
-app.use(cors());
+app.use(cors({ origin: config.frontendUrls }));
 app.use(express.json());
 
 app.get("/api/health", (_req, res) => {

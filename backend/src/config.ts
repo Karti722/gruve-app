@@ -19,6 +19,16 @@ export const config = {
   pythonEmbeddingServiceUrl:
     process.env.PYTHON_EMBEDDING_SERVICE_URL ?? "http://localhost:8001",
 
+  /** Origin(s) allowed to call this API from a browser (CORS), comma-separated.
+   * Defaults to the local frontend dev server. In production this must be set
+   * to the frontend's real public URL — an open origin policy would let any
+   * other website's JS call this backend (and spend your Anthropic budget)
+   * directly from a visitor's browser. */
+  frontendUrls: (process.env.FRONTEND_URL ?? "http://localhost:3000")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean),
+
   mcpServerEntry: process.env.MCP_SERVER_ENTRY ?? "../mcp-server/dist/index.js",
 
   /** pgvector-enabled Postgres instance backing the RAG vector store. Port

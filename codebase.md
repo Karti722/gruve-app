@@ -143,7 +143,8 @@ ai-nexus/
 
 ### `backend/` — the Express REST API
 - **`src/config.ts`** — loads `.env` once and exposes a typed `config` object, including the
-  `isMockMode` getter that everything else keys off of.
+  `isMockMode` getter that everything else keys off of, and `frontendUrls` (parsed from the
+  comma-separated `FRONTEND_URL` env var) that scopes the CORS policy in `server.ts`.
 - **`src/prompts/systemPrompts.ts`** — every prompt sent to the LLM lives here, not inline in
   route handlers: `CHAT_SYSTEM_PROMPT` (persona/tone), `buildRagPrompt()` (grounding + citation
   instructions), `AGENT_SYSTEM_PROMPT` (ReAct tool-use instructions), plus a documented few-shot
@@ -182,8 +183,9 @@ ai-nexus/
   instead of a generic message, so failures are self-explanatory directly in the UI.
 - **`src/utils/errors.ts`** — pulls the specific message out of Anthropic API errors (or falls back
   to a normal `Error.message`) so route error responses explain what actually went wrong.
-- **`src/server.ts`** — wires up Express, CORS, JSON body parsing, seeds the knowledge base on
-  boot, and starts listening.
+- **`src/server.ts`** — wires up Express, CORS (scoped to `config.frontendUrls`, not wide open —
+  see `.env.example`'s `FRONTEND_URL`), JSON body parsing, seeds the knowledge base on boot, and
+  starts listening.
 - **`data/knowledge-base/*.md`** — the actual content the RAG pipeline indexes: short explainer
   docs about LLMs, RAG, prompt engineering, AI agents, MCP, vector databases, and full-stack
   architecture — i.e., the same concepts this app demonstrates, written up as its own test corpus.
@@ -376,3 +378,8 @@ the agent's answer — the full think → act → observe → answer loop made v
   than jumping to Next 16, since the remaining advisories in that line (image-optimization DoS,
   websocket SSRF, i18n middleware bypass) affect features this demo doesn't use, and a major
   version bump wasn't worth the churn for a demo repo.
+- **The backend's CORS policy is scoped, not wide open.** `FRONTEND_URL` (comma-separated for
+  multiple origins) controls which origin(s) may call the API from a browser — it defaults to
+  `http://localhost:3000` locally, but **must** be set to the frontend's real public URL in
+  deployment (see `deployment.md`'s "backend ↔ frontend URL is circular" note), otherwise any
+  other website's JS could call the deployed backend and spend your Anthropic API budget.
