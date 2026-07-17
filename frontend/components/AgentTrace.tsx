@@ -11,7 +11,7 @@ export function AgentTrace({ trace }: { trace: AgentTraceStep[] }) {
     <ol className="space-y-4">
       {trace.map((step, i) => (
         <li key={i} className="border-l-2 border-paper-ink/15 pl-4">
-          <div className="mb-1.5 flex items-center gap-2">
+          <div className="mb-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
             <span className="font-display text-xs font-bold text-paper-ink/40">{i + 1}.</span>
             <StepBadge step={step} />
             {step.toolName && (
