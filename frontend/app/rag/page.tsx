@@ -134,9 +134,9 @@ export default function RagPage() {
       </div>
 
       <TextbookPage
-        eyebrow="Chapter 2"
+        eyebrow="Chapter 3"
         title="Retrieval-Augmented Generation (RAG)"
-        pageNumber="Page 2"
+        pageNumber="Page 3"
       >
         <p>
           A language model's knowledge is frozen at whatever point its training data was collected,

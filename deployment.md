@@ -9,10 +9,10 @@ each one's simplest "serverless containers" service — no Kubernetes cluster to
 Azure and GCP each get two full, self-contained paths below: a **Paid** path (that cloud's own
 managed Postgres) and a **Free** path (a $0/month third-party Postgres instead). AWS is paid-only
 — Fargate has no standing free compute tier, so there's no free variant to offer there (see
-section 2).
+section 3).
 
 If you specifically want a Kubernetes-based deployment (EKS/AKS/GKE) instead, see
-[section 5](#5-if-you-specifically-need-kubernetes-eksaksgke) at the end.
+[section 6](#6-if-you-specifically-need-kubernetes-eksaksgke) at the end.
 
 ---
 
@@ -110,13 +110,57 @@ budgeting for real.
 |---|---|---|
 | AWS (Paid — only option) | **~$90–100** | Fargate, the ALB, and RDS are all provisioned resources billed continuously — nothing on AWS scales to zero or has a standing free tier here |
 | Azure Paid | **~$20–35** | Dominated by Azure Database for PostgreSQL (billed 24/7); Container Apps compute is often ~$0 if traffic stays inside the standing free grant |
-| Azure Free | **$0** | Neon + Container Apps' free grant + mock mode (section 3B) |
+| Azure Free | **$0** | Neon + Container Apps' free grant + mock mode (section 4B) |
 | GCP Paid | **~$12–25** | Dominated by Cloud SQL (billed 24/7); Cloud Run compute is often ~$0 if traffic stays inside the standing free grant |
-| GCP Free | **$0** | Neon + Cloud Run's free tier + mock mode (section 4B) |
+| GCP Free | **$0** | Neon + Cloud Run's free tier + mock mode (section 5B) |
 
 ---
 
-## 2. AWS — ECS Fargate + RDS for PostgreSQL + ECR
+## 2. Why these platforms, and what else was considered
+
+**Why AWS, Azure, and GCP, and not a simpler PaaS (Railway, Render, Fly.io, Heroku, DigitalOcean
+App Platform)?** Any of those would deploy this app's four containers with noticeably less
+ceremony — no IAM policies, no VPC networking to reason about, often a single config file. They
+were left out on purpose: this guide is written to double as practice with the platforms real job
+postings and real company infrastructure actually name, not just the fastest way to get a link
+online. The trade-off is real, though — a simpler PaaS is a genuinely better choice if the goal is
+only "get this running publicly today," and nothing here stops you from pointing one at these same
+Dockerfiles; the shape (build an image per service, run it, point it at a Postgres with `pgvector`)
+doesn't change.
+
+**Why serverless containers (Fargate / Container Apps / Cloud Run) as the default, instead of raw
+VMs or committing to Kubernetes from the start?** This is the actual default compute model at most
+companies below a certain infrastructure-team size today, for a reason: it gives most of what
+Kubernetes offers — declarative deploys, no manually patched servers, the platform restarting a
+crashed container for you — without a cluster to size, upgrade, or operate. The trade-off against
+Kubernetes is real too: less portability (each cloud's serverless-container API is shaped
+differently, where a Kubernetes manifest is close to identical across all three) and no access to
+advanced orchestration primitives like custom schedulers or a service mesh. Section 6 exists as an
+explicit escape hatch for exactly the deployments that need those.
+
+**Why is AWS included at all, given it's the most expensive option here with no free path?**
+Fargate, RDS, and the ALB together are genuinely the priciest of the three for a low-traffic demo
+(see the cost table above), and AWS has no standing free compute tier the way Azure and GCP do —
+but ECS/Fargate/RDS experience shows up disproportionately often in job postings relative to its
+Azure/GCP equivalents, so it earns its place here for the learning value even though it's the worst
+fit for a $0 portfolio deployment. Azure and GCP get the Free-path treatment specifically because
+their serverless compute has a standing (not trial) free grant, and because Postgres is the one
+AWS-side cost with no free managed equivalent — RDS has never offered a perpetual free tier the way
+Container Apps and Cloud Run do for compute.
+
+**Why an external Postgres provider (Neon) for the Free paths, instead of just running Postgres in
+a container on the same platform?** None of Fargate, Container Apps, or Cloud Run are built to run
+a stateful, always-on process — they're all designed around disposable, stateless containers that
+scale to zero, which is exactly wrong for a database that needs a persistent volume and must never
+restart mid-write. Running Postgres in a plain container on any of them would appear to work right
+up until the next scale-to-zero cycle silently lost data. A real database on these platforms
+therefore needs either that cloud's managed Postgres (the Paid path) or an external, always-on
+Postgres provider reached over the network (the Free path's Neon) — see "About the Free paths" in
+section 1 for why Neon specifically, over Supabase or a self-hosted alternative.
+
+---
+
+## 3. AWS — ECS Fargate + RDS for PostgreSQL + ECR
 
 *Paid only — AWS Fargate has no standing free compute tier, so there's no $0/month variant here.
 See the Free paths in sections 3 and 4 instead.*
@@ -251,9 +295,9 @@ this is why AWS is the most expensive of the three clouds in this guide for a lo
 
 ---
 
-## 3. Azure — Container Apps + ACR
+## 4. Azure — Container Apps + ACR
 
-### 3A. Paid path: Container Apps + Azure Database for PostgreSQL
+### 4A. Paid path: Container Apps + Azure Database for PostgreSQL
 
 **Services used:** Azure Container Registry (images), Azure Container Apps (compute — built-in
 HTTPS, internal/external ingress, and scale-to-zero), Azure Database for PostgreSQL Flexible
@@ -337,7 +381,7 @@ az containerapp create \
 ```
 
 #### Step 6: Point the backend's CORS policy at the deployed frontend
-Unlike GCP's `--set-env-vars` note in section 4A's Step 6, Container Apps' `--set-env-vars` on
+Unlike GCP's `--set-env-vars` note in section 5A's Step 6, Container Apps' `--set-env-vars` on
 `update` only adds/overwrites the named variable(s) — it doesn't clear the others set in Step 4,
 so no extra flag needed:
 ```bash
@@ -363,7 +407,7 @@ regardless of traffic — that's the dominant, unavoidable cost here.
 
 ---
 
-### 3B. Free path ($0/month): Container Apps + Neon
+### 4B. Free path ($0/month): Container Apps + Neon
 
 **Services used:** Azure Container Registry (images), Azure Container Apps (compute — a standing
 free monthly grant of 180,000 vCPU-seconds / 360,000 GiB-seconds / 2,000,000 requests, not a
@@ -443,9 +487,9 @@ az containerapp update \
 
 ---
 
-## 4. GCP — Cloud Run + Artifact Registry
+## 5. GCP — Cloud Run + Artifact Registry
 
-### 4A. Paid path: Cloud Run + Cloud SQL for PostgreSQL
+### 5A. Paid path: Cloud Run + Cloud SQL for PostgreSQL
 
 **Services used:** Artifact Registry (images), Cloud Run (compute — scale-to-zero, built-in
 HTTPS), Cloud SQL for PostgreSQL (database), Secret Manager (API key).
@@ -541,7 +585,7 @@ dominant, unavoidable cost here, and it's why GCP comes out cheapest of the thre
 
 ---
 
-### 4B. Free path ($0/month): Cloud Run + Neon
+### 5B. Free path ($0/month): Cloud Run + Neon
 
 **Services used:** Artifact Registry (images), Cloud Run (compute — a standing always-free tier of
 2,000,000 requests, 180,000 vCPU-seconds, and 360,000 GiB-seconds per month, not a 12-month
@@ -614,7 +658,7 @@ gcloud run services update backend \
 
 ---
 
-## 5. If you specifically need Kubernetes (EKS/AKS/GKE)
+## 6. If you specifically need Kubernetes (EKS/AKS/GKE)
 
 The same four images work unmodified on any Kubernetes cluster — nothing here is
 platform-specific. The shape is a `Deployment` + `Service` per container (`ClusterIP` for
@@ -629,7 +673,7 @@ inherently "more production."
 
 ---
 
-## 6. Notes that apply to all clouds and paths
+## 7. Notes that apply to all clouds and paths
 
 - **`python-service` and `postgres` should never be publicly exposed.** Only `backend` and
   `frontend` need public HTTPS endpoints; the examples above set `python-service` to

@@ -72,17 +72,17 @@ export default function ArchitecturePage() {
         <p>
           The RAG chapter's vector database is real: PostgreSQL (a general-purpose database) with an
           extension called pgvector enabled, which adds a genuine nearest-neighbor search index — the
-          same HNSW-style index described conceptually in Chapter 2, not a hand-rolled substitute.
+          same HNSW-style index described conceptually in Chapter 3, not a hand-rolled substitute.
         </p>
         <p>
           Turning text into the embeddings that database stores is handled by a separate, small
           Python service, using a framework called FastAPI. That same service does most of this
-          tutorial's text processing beyond the chat itself: Chapter 4's summarization ranks
-          sentences using the exact same embeddings, and Chapters 5 through 7's tokenizer, cache,
-          and evaluator all live there too, alongside RAG's embeddings — grouping them together
-          because they're all "text in, numbers or structured data out" utilities a model
-          orchestrator calls into, not because they share a single algorithm. Keeping this concern
-          separate from the orchestrator is deliberate: Python is where most machine-learning
+          tutorial's text processing beyond the chat itself: Chapter 5's summarization ranks
+          sentences using the exact same embeddings, and Chapter 1's tokenizer along with Chapters
+          6 and 7's cache and evaluator all live there too, alongside RAG's embeddings — grouping
+          them together because they're all "text in, numbers or structured data out" utilities a
+          model orchestrator calls into, not because they share a single algorithm. Keeping this
+          concern separate from the orchestrator is deliberate: Python is where most machine-learning
           tooling lives, so isolating it into its own service means it can use whatever tools that
           ecosystem offers without pulling the rest of the system into Python along with it — the
           same "different languages for different jobs" reasoning any polyglot system uses.
@@ -92,7 +92,7 @@ export default function ArchitecturePage() {
           <span className="text-brand-600">9.5</span> Taking Action
         </h2>
         <p>
-          The tool server from Chapter 3 is not a simulated feature living inside the orchestrator —
+          The tool server from Chapter 4 is not a simulated feature living inside the orchestrator —
           it's a genuinely separate program, started independently, speaking the Model Context
           Protocol over the exact same kind of connection a real MCP-compatible application would
           use. When the agent "reaches for a tool served over MCP," it is actually doing that, not

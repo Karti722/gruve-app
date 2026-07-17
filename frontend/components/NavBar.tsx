@@ -5,12 +5,12 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 const LINKS = [
-  { href: "/", label: "Contents" },
-  { href: "/chat", label: "LLM Chat", chapter: "Ch. 1" },
-  { href: "/rag", label: "RAG", chapter: "Ch. 2" },
-  { href: "/agent", label: "AI Agent + MCP", chapter: "Ch. 3" },
-  { href: "/summarize", label: "Summarization", chapter: "Ch. 4" },
-  { href: "/tokenizer", label: "Tokenization & Cost", chapter: "Ch. 5" },
+  { href: "/introduction", label: "Introduction" },
+  { href: "/tokenizer", label: "Tokenization & Cost", chapter: "Ch. 1" },
+  { href: "/chat", label: "LLM Chat", chapter: "Ch. 2" },
+  { href: "/rag", label: "RAG", chapter: "Ch. 3" },
+  { href: "/agent", label: "AI Agent + MCP", chapter: "Ch. 4" },
+  { href: "/summarize", label: "Summarization", chapter: "Ch. 5" },
   { href: "/cache", label: "Semantic Caching", chapter: "Ch. 6" },
   { href: "/eval", label: "Evaluating AI Outputs", chapter: "Ch. 7" },
   { href: "/enterprise", label: "Enterprise Use", chapter: "Ch. 8" },

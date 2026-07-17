@@ -3,33 +3,33 @@ import Link from "next/link";
 const CHAPTERS = [
   {
     number: "Chapter 1",
+    href: "/tokenizer",
+    title: "Tokenization and the Cost of a Request",
+    description: "A real BPE tokenizer, and what a hosted model actually costs to call.",
+  },
+  {
+    number: "Chapter 2",
     href: "/chat",
     title: "Large Language Models",
     description: "How a model turns a prompt into a reply, one token at a time.",
   },
   {
-    number: "Chapter 2",
+    number: "Chapter 3",
     href: "/rag",
     title: "Retrieval-Augmented Generation",
     description: "Teaching an AI to look things up before it answers.",
   },
   {
-    number: "Chapter 3",
+    number: "Chapter 4",
     href: "/agent",
     title: "AI Agents and Tool Use",
     description: "Watching an AI decide, act, and use outside tools on its own.",
   },
   {
-    number: "Chapter 4",
+    number: "Chapter 5",
     href: "/summarize",
     title: "Automatic Text Summarization",
     description: "Ranking a document's own sentences to condense it, without inventing a word.",
-  },
-  {
-    number: "Chapter 5",
-    href: "/tokenizer",
-    title: "Tokenization and the Cost of a Request",
-    description: "A real BPE tokenizer, and what a hosted model actually costs to call.",
   },
   {
     number: "Chapter 6",
@@ -92,7 +92,23 @@ export default function HomePage() {
           Table of Contents
         </h2>
 
-        <ol className="mt-8 space-y-1">
+        <Link
+          href="/introduction"
+          className="group mt-6 flex items-baseline gap-3 border-b border-paper-ink/10 py-3 transition hover:border-brand-500/40"
+        >
+          <span className="shrink-0 font-display text-sm font-semibold italic text-paper-ink transition group-hover:text-brand-700">
+            Introduction — Why This Guide Exists
+          </span>
+          <span
+            className="hidden flex-1 translate-y-[-2px] border-b border-dotted border-paper-ink/30 sm:block"
+            aria-hidden
+          />
+          <span className="hidden shrink-0 font-display text-sm text-paper-ink/40 transition group-hover:text-brand-600 sm:inline">
+            /introduction
+          </span>
+        </Link>
+
+        <ol className="mt-1 space-y-1">
           {CHAPTERS.map((chapter) => (
             <li key={chapter.href}>
               <Link

@@ -189,13 +189,13 @@ export default function SummarizePage() {
         )}
       </div>
 
-      <TextbookPage eyebrow="Chapter 4" title="Automatic Text Summarization" pageNumber="Page 4">
+      <TextbookPage eyebrow="Chapter 5" title="Automatic Text Summarization" pageNumber="Page 5">
         <p>
           Long documents are slow to read, and not every sentence in one carries equal weight —
           most of a document's meaning tends to be concentrated in a handful of central sentences,
           surrounded by supporting detail, examples, and asides. Skimming a full document just to
           find its main point doesn't scale once there are hundreds of documents to get through,
-          which is the same problem retrieval in Chapter 2 solves for finding documents in the
+          which is the same problem retrieval in Chapter 3 solves for finding documents in the
           first place. This chapter is about condensing a single one, once you're already looking
           at it.
         </p>
@@ -203,7 +203,7 @@ export default function SummarizePage() {
         <p>
           Summarization comes in two families. <strong>Abstractive</strong> summarization asks a
           language model to write a new, shorter version of a text in its own words — the same
-          generation mechanism from Chapter 1, given a document instead of a question.{" "}
+          generation mechanism from Chapter 2, given a document instead of a question.{" "}
           <strong>Extractive</strong> summarization takes a different approach: instead of
           generating new text, it selects a handful of the document's own sentences, verbatim, and
           presents them in their original order as the summary. Nothing is paraphrased or invented —
@@ -216,7 +216,7 @@ export default function SummarizePage() {
           The demo above uses a specific extractive method called <strong>TextRank</strong>, which
           scores every sentence in a document by how well-connected it is to the rest of the
           document's ideas, then keeps only the highest-scoring ones. Each sentence is converted
-          into an embedding — the same technique from Chapter 2 — and compared against every other
+          into an embedding — the same technique from Chapter 3 — and compared against every other
           sentence using cosine similarity, producing a similarity score for every pair. That turns
           the document into a graph: sentences are nodes, and their pairwise similarity is the
           strength of the edge connecting them. A short, iterative calculation then spreads
@@ -239,12 +239,12 @@ export default function SummarizePage() {
           Above, paste in a paragraph or two of your own writing, or try one of the samples, and
           choose how many sentences to extract. The result shows exactly which sentences were
           selected and their individual scores, so you can see why the algorithm chose them — the
-          same kind of transparency Chapter 2's citations and Chapter 3's reasoning trace already
+          same kind of transparency Chapter 3's citations and Chapter 4's reasoning trace already
           gave you for retrieval and tool use.
         </p>
 
         <h2 className="font-display text-lg font-bold text-paper-ink">
-          <span className="text-brand-600">4.1</span> Two Smaller, Older Techniques
+          <span className="text-brand-600">5.1</span> Two Smaller, Older Techniques
         </h2>
         <p>
           Alongside the summary, two much older and simpler techniques run over the same text.

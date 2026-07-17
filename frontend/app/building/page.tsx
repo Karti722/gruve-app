@@ -9,12 +9,12 @@ export default function BuildingPage() {
           Chapter 9 walked through what runs behind these pages. This one is about how it came to
           exist in the first place: every chapter, every diagram, and every part of the system
           described in Chapter 9 was built through an extended conversation between a person and an
-          AI coding assistant — the same agent pattern taught in Chapter 3, pointed at a real
+          AI coding assistant — the same agent pattern taught in Chapter 4, pointed at a real
           codebase instead of a calculator.
         </p>
 
         <p>
-          The process looked like the ReAct loop from Chapter 3, just running on source code instead
+          The process looked like the ReAct loop from Chapter 4, just running on source code instead
           of a single question. The author described what they wanted in plain language — a working
           demo of these concepts, then a friendlier rewrite aimed at complete beginners, then a
           different visual identity entirely, then two more chapters covering real-world use and the
@@ -29,7 +29,7 @@ export default function BuildingPage() {
           textbook" identity you're reading right now — serif type, chapter numbers, page footers,
           the works — after a review made clear the first version didn't fit a tutorial. Even within
           that redesign, individual pieces changed again: chat bubbles became the question-and-answer
-          transcript in Chapter 1, and boxed cards became the footnote-style citations in Chapter 2.
+          transcript in Chapter 2, and boxed cards became the footnote-style citations in Chapter 3.
           None of it arrived finished on the first attempt.
         </p>
 
@@ -38,7 +38,7 @@ export default function BuildingPage() {
           fast, extremely literal collaborator. You can describe an entire chapter, or a full visual
           redesign, in a sentence and get a working draft back in moments — but you still have to
           look closely at what comes back, notice the parts that miss the mark, and say so clearly.
-          That review step is doing most of the real work, the same way Chapter 3's "observe" step is
+          That review step is doing most of the real work, the same way Chapter 4's "observe" step is
           what makes an agent loop useful instead of just fast.
         </Analogy>
 

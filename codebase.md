@@ -18,7 +18,7 @@ together by using them directly.
 | Tokenization & cost estimation | `python-service/app/tokenizer.py` (from-scratch BPE) + `/tokenizer` page |
 | Semantic caching | `python-service/app/semantic_cache.py` + `/cache` page |
 | Evaluating AI outputs | `python-service/app/eval.py` + `/eval` page |
-| Python | `python-service/` (FastAPI microservice — see section 2 for what it does and why) |
+| Python | `python-service/` (FastAPI microservice — see section 1 for what it does and why) |
 | JavaScript/TypeScript, Node.js | `backend/`, `mcp-server/` |
 | React/Next.js | `frontend/` |
 | REST APIs & microservices architecture | Express API in `backend/`, FastAPI service in `python-service/`, communicating over HTTP |
@@ -92,7 +92,89 @@ chapter for, rather than an in-name-only label on what's actually a single monol
 
 ---
 
-## 2. Directory structure
+## 2. Tech stack choices, and what else was considered
+
+None of these were the only reasonable choice. Each one below was picked over specific,
+named alternatives for a specific reason — and each has a real trade-off, not just an upside.
+
+**Frontend — Next.js (App Router) + React + TypeScript + Tailwind CSS.** Considered instead: plain
+Vite + React, Remix, SvelteKit/Vue, or a server-rendered template engine. Next's file-based routing
+maps 1:1 onto this app's chapter structure — every chapter is one folder, so adding, removing, or
+reordering a chapter (this guide has done all three) is a mechanical change to the filesystem and a
+couple of ordered lists, not a routing-config edit. It also ships a production build story (static
+prerendering per route — see the route table any `npm run build` prints) with no extra tooling
+assembled by hand, unlike bare Vite + React. The trade-off: App Router brings real complexity
+(Server/Client Component boundaries, a `"use client"` directive on every interactive page) that
+this app barely uses — every page is a client component fetching from the browser, the same shape
+a plain SPA would have — so a meaningful slice of what Next.js offers (server data-fetching,
+streaming) goes unused here. Tailwind, over CSS Modules or a component library like MUI, because
+the "printed textbook" identity (custom `paper`, `paper-ink`, `brand-*` tokens in
+`tailwind.config.ts`) can be defined once and composed directly in JSX — useful given this app's
+visual design has been fully rebuilt from scratch more than once (see Chapter 10).
+
+**Orchestrator — Node.js + Express + TypeScript.** Considered instead: Python (FastAPI/Django/
+Flask) for the whole backend, a heavier Node framework (NestJS), or a different language (Go). The
+deciding factor is covered in section 1: Anthropic's SDK, the MCP SDK, and the frontend are all
+TypeScript, so the layer that has to speak to all three benefits from being in that same language,
+with no serialization boundary at every hop. Express specifically, over NestJS, because this
+backend's routing needs are simple — validate input, call a module, return JSON — and don't need
+NestJS's dependency-injection/decorator machinery, which pays for itself in larger codebases more
+than it would here. The trade-off: Express gives almost nothing for free — no built-in validation,
+no OpenAPI generation, none of FastAPI's automatic typing from Pydantic models. Every route here
+hand-writes its own type guard rather than leaning on a validation library, which is fine at this
+app's route count but wouldn't stay clean at ten times the size without adding something like
+`zod`.
+
+**Microservice — Python + FastAPI.** Considered instead: implementing the same algorithms in
+TypeScript inside the Node backend, or Flask/Django instead of FastAPI. The full reasoning is in
+section 1 — Python is where this class of tooling actually lives, even in a version of this app
+that deliberately doesn't pull in any of it yet. FastAPI specifically, over Flask, for its
+built-in Pydantic request/response validation and automatic OpenAPI docs (served at the running
+service's `/docs`): every endpoint added to this service — `/tokenize`, `/cache-sim`, `/evaluate`
+included — got a validated, typed contract for free just by declaring a `BaseModel`, with no
+separate validation code written by hand. The trade-off: a second language means a second
+install step, a second set of typing conventions, and a real network hop with real failure modes
+(see `embeddingsClient.ts`'s fallback) where an in-process function call would do if everything
+were TypeScript — worth it here because every algorithm this service hosts is naturally
+self-contained and never needs to share memory or a transaction with the orchestrator.
+
+**Database — PostgreSQL + pgvector.** Considered instead: a dedicated vector database (Pinecone,
+Weaviate, Qdrant, Milvus), an embedded option (Chroma), or an in-memory brute-force scan. pgvector
+adds real HNSW-indexed nearest-neighbor search to a database that's otherwise a completely
+ordinary, boring, well-understood relational store — no new category of infrastructure to run,
+monitor, or back up, and it's supported natively or near-natively on every major cloud's managed
+Postgres (see `deployment.md`). The trade-off: a dedicated vector database would genuinely
+outperform pgvector at extreme scale (billions of vectors) and offers more vector-specific features
+out of the box. At this app's actual data volume — a few dozen knowledge-base chunks — that ceiling
+is irrelevant, so the simpler, more boring option won; Chapter 8 and `06-vector-databases.md` cover
+the general version of this exact trade-off, the one real companies make at a different scale.
+
+**Docker + Docker Compose.** Considered instead: no containerization (a documented local-setup-only
+story), or committing to Kubernetes from the start. This app is four independently runnable
+services across two runtimes plus Postgres — Compose is the lightest tool that still makes
+`docker compose up` reproduce an identical environment on any machine, rather than asking a new
+contributor to install Python, Node, and Postgres natively and configure all three correctly by
+hand. It's also what makes `deployment.md` section 1's "the same four images work on any cloud"
+claim literally true rather than aspirational. The trade-off: Kubernetes offers real production
+primitives (rolling deploys, autoscaling, self-healing) Compose doesn't have — irrelevant to a
+single-instance demo deployment, which is why that path exists only as an optional section in
+`deployment.md` rather than the default.
+
+**LLM provider — Anthropic Claude.** Considered instead: OpenAI's API, or a self-hosted open-source
+model (Llama, Mistral). This app's `LLMClient` interface (`backend/src/llm/types.ts`) is
+deliberately provider-agnostic — `chat()` and `step()` are the entire contract — specifically so
+the model is a swappable implementation, not a design constraint baked into every route. Claude was
+picked as the concrete implementation partly because MCP's own tool-use shape was modeled by the
+same company, keeping Chapter 9's "real MCP, not a simulation" claim consistent end to end.
+Switching providers means writing one more file implementing the same interface `anthropicClient.ts`
+does; nothing else in the app changes. The trade-off: no self-hosting means real dependence on a
+third party's uptime, pricing, and rate limits — mitigated entirely by mock mode (see the Notes
+section), which is why mock mode is this app's actual default state, not a fallback bolted on
+after the fact.
+
+---
+
+## 3. Directory structure
 
 ```
 ai-nexus/
@@ -199,11 +281,12 @@ ai-nexus/
         ├── layout.tsx              # shared shell (nav + page container)
         ├── globals.css             # Tailwind + shared utility classes
         ├── page.tsx                 # landing page — table of contents
-        ├── chat/page.tsx            # Ch.1 — LLM chat demo
-        ├── rag/page.tsx             # Ch.2 — RAG demo
-        ├── agent/page.tsx           # Ch.3 — AI agent + MCP demo
-        ├── summarize/page.tsx       # Ch.4 — extractive summarization demo
-        ├── tokenizer/page.tsx       # Ch.5 — tokenization & cost demo
+        ├── introduction/page.tsx    # front matter — why this guide exists
+        ├── tokenizer/page.tsx       # Ch.1 — tokenization & cost demo
+        ├── chat/page.tsx            # Ch.2 — LLM chat demo
+        ├── rag/page.tsx             # Ch.3 — RAG demo
+        ├── agent/page.tsx           # Ch.4 — AI agent + MCP demo
+        ├── summarize/page.tsx       # Ch.5 — extractive summarization demo
         ├── cache/page.tsx           # Ch.6 — semantic caching demo
         ├── eval/page.tsx            # Ch.7 — AI-output evaluation demo
         ├── enterprise/page.tsx      # Ch.8 — real-world case studies
@@ -214,7 +297,7 @@ ai-nexus/
 
 ---
 
-## 3. File-by-file explanation
+## 4. File-by-file explanation
 
 ### Root
 - **`package.json`** — orchestration only. `npm run dev` runs `scripts/dev.js`, which drives
@@ -231,12 +314,12 @@ ai-nexus/
   [Neon](https://neon.tech) for a free `pgvector`-enabled Postgres) for demo/portfolio use.
 - **`scripts/dev.js`** — powers `npm run dev`. Drives `concurrently` programmatically (rather than
   shelling out to its CLI) specifically so it can run `stop-all.js`'s cleanup automatically when
-  `npm run dev` exits or is interrupted — see the "Stopping everything" note in section 5 for the
+  `npm run dev` exits or is interrupted — see the "Stopping everything" note in section 6 for the
   reliability caveat on Windows.
 - **`scripts/stop-all.js`** — powers `npm run stop` (and is what `dev.js` calls internally on
   exit). Finds and kills anything listening on this app's ports plus any lingering
   mcp-server/dev.js watcher processes, so a half-killed `npm run dev` (common on Windows — see
-  section 5) doesn't block the next one from starting.
+  section 6) doesn't block the next one from starting.
 
 ### `backend/` — the Express REST API (the orchestrator — see section 1)
 - **`src/config.ts`** — loads `.env` once and exposes a typed `config` object, including the
@@ -339,12 +422,12 @@ of, and the citation to the original technique.
   `Analogy` and `CaseStudy` (left-border callout boxes), `Sources` (a citation list), and
   `ArchitectureDiagram` (Chapter 9's system diagram).
 - **`app/`** — one route per chapter (see the directory tree above for the full chapter-to-route
-  mapping), plus `/` (the table of contents) and `/glossary` (every term, cross-linked to its
-  chapter).
+  mapping), plus `/` (the table of contents), `/introduction` (front matter — why this guide
+  exists, ahead of Chapter 1), and `/glossary` (every term, cross-linked to its chapter).
 
 ---
 
-## 4. Setup
+## 5. Setup
 
 ### Prerequisites
 - **Node.js 20+** and npm
@@ -377,7 +460,7 @@ npm run build:mcp
 
 ---
 
-## 5. Running it
+## 6. Running it
 
 ### Step 0 — start the vector database (required for Options A and B)
 ```bash
@@ -456,36 +539,40 @@ Docker Compose path with `docker compose down`, which stops everything including
 
 ---
 
-## 6. Demo — what you'll see when you run it
+## 7. Demo — what you'll see when you run it
 
-**Landing page (`/`)** — a printed-textbook-styled table of contents listing all ten chapters plus
-the glossary, each linking straight to its page.
+**Landing page (`/`)** — a printed-textbook-styled table of contents listing the introduction, all
+ten chapters, and the glossary, each linking straight to its page.
 
-**Chapter 1 — LLM Chat (`/chat`)** — a chat window with a message history, an input box, and a
+**Introduction (`/introduction`)** — front matter, not a numbered chapter: why this guide exists,
+the gap between what universities teach and what applied AI engineering actually looks like in
+practice, and what a reader should expect to get out of working through it.
+
+**Chapter 1 — Tokenization and the Cost of a Request (`/tokenizer`)** — type text and see it split
+into real BPE tokens (trained live by the Python service), plus an estimated dollar cost at
+published per-model rates.
+
+**Chapter 2 — LLM Chat (`/chat`)** — a chat window with a message history, an input box, and a
 "MOCK MODE" / "LIVE · Anthropic" badge in the corner that reflects the backend's actual mode. Type
 a message and your bubble appears on the right, the assistant's reply on the left — a live
 back-and-forth conversation with real multi-turn history sent on every request.
 
-**Chapter 2 — RAG (`/rag`)** — a question box with clickable sample questions. Ask something like
+**Chapter 3 — RAG (`/rag`)** — a question box with clickable sample questions. Ask something like
 *"What is the Model Context Protocol?"* and you'll see an **Answer** card followed by a
 **Retrieved sources** list: numbered citation cards each showing the source markdown file, a
 cosine-similarity score (computed by pgvector's HNSW index, not hand-rolled JS), and the exact
 retrieved passage.
 
-**Chapter 3 — AI Agent + MCP (`/agent`)** — a prompt box, an "Include tools from the MCP server"
+**Chapter 4 — AI Agent + MCP (`/agent`)** — a prompt box, an "Include tools from the MCP server"
 checkbox, and one-click sample prompts that trigger the calculator tool, the knowledge-base search
 tool, or (with MCP enabled) the weather tool living entirely inside the separate `mcp-server/`
 process. Each run renders a **Reasoning trace**: every tool call, its input, its result, and the
 final answer — the full think → act → observe → answer loop made visible.
 
-**Chapter 4 — Automatic Text Summarization (`/summarize`)** — paste in a paragraph and choose how
+**Chapter 5 — Automatic Text Summarization (`/summarize`)** — paste in a paragraph and choose how
 many sentences to extract; TextRank scores every sentence and returns the top-ranked ones in
 original order, alongside extracted keywords and a before/after Flesch-Kincaid readability
 comparison.
-
-**Chapter 5 — Tokenization and the Cost of a Request (`/tokenizer`)** — type text and see it split
-into real BPE tokens (trained live by the Python service), plus an estimated dollar cost at
-published per-model rates.
 
 **Chapter 6 — Semantic Caching (`/cache`)** — paste a list of queries, one per line, including a
 paraphrase and an exact repeat; watch each one get replayed against an in-memory cache keyed by
@@ -497,7 +584,7 @@ composite score.
 
 **Chapter 8 — These Concepts in the Real World (`/enterprise`)** — real companies (Klarna, Morgan
 Stanley, Spotify, GitHub, Goldman Sachs, the Linux Foundation) and their published numbers, one
-case study per core concept from Chapters 1–3.
+case study per core concept from Chapters 2–4.
 
 **Chapter 9 — The System Behind This Tutorial (`/architecture`)** — a behind-the-scenes tour of
 this very system, including a diagram of how the four services talk to each other.
@@ -510,7 +597,7 @@ where it's explained and, where one exists, to a real primary source.
 
 ---
 
-## 7. Notes
+## 8. Notes
 
 - **Mock mode is not a lesser demo — it's the default one.** Every route, prompt template,
   retrieval step, and tool call is real; only the final LLM call is canned (and always prefixed

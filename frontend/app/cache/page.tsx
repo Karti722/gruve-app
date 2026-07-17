@@ -135,7 +135,7 @@ export default function CachePage() {
 
       <TextbookPage eyebrow="Chapter 6" title="Semantic Caching" pageNumber="Page 6">
         <p>
-          Chapter 5 put a real number on every request to a hosted model. The cheapest possible
+          Chapter 1 put a real number on every request to a hosted model. The cheapest possible
           request is one that never has to be made at all — and a <strong>cache</strong> is the
           standard way to avoid making it. A plain cache only helps when a new request's text
           matches a previous one exactly, character for character. Real user traffic rarely
@@ -148,7 +148,7 @@ export default function CachePage() {
         </h2>
         <p>
           A <strong>semantic cache</strong> fixes this by keying on meaning instead of exact text:
-          each incoming query is embedded — the same technique from Chapter 2 — and compared by
+          each incoming query is embedded — the same technique from Chapter 3 — and compared by
           cosine similarity against every embedding already sitting in the cache. If the closest
           match clears a similarity threshold, it's treated as the same question and the cached
           result is reused; the model is never called at all. If nothing clears the threshold, the
@@ -158,7 +158,7 @@ export default function CachePage() {
         <p>
           Try the sample query stream above: the second query is a paraphrase of the first and
           still misses at the default threshold (this app's hash-based embeddings capture shared
-          words well but not true synonymy — see Chapter 2's honest limitation on this), while the
+          words well but not true synonymy — see Chapter 3's honest limitation on this), while the
           fourth query — an exact repeat of the first — hits immediately. A production system using
           real semantic embeddings would catch the paraphrase too; lowering the threshold here
           shows roughly what that looks like.
@@ -186,7 +186,7 @@ export default function CachePage() {
         <Sources
           items={[
             {
-              label: "Cosine similarity — Wikipedia (the same similarity measure Chapter 2's retrieval uses)",
+              label: "Cosine similarity — Wikipedia (the same similarity measure Chapter 3's retrieval uses)",
               href: "https://en.wikipedia.org/wiki/Cosine_similarity",
             },
             {

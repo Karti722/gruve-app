@@ -131,18 +131,18 @@ export default function TokenizerPage() {
         )}
       </div>
 
-      <TextbookPage eyebrow="Chapter 5" title="Tokenization and the Cost of a Request" pageNumber="Page 5">
+      <TextbookPage eyebrow="Chapter 1" title="Tokenization and the Cost of a Request" pageNumber="Page 1">
         <p>
-          Chapters 1 through 4 covered what these systems can do. This chapter starts a different
-          thread: what it actually costs to run them, and what an engineer building on top of a
-          hosted model needs to track to keep that cost under control. Every hosted model — the one
-          behind Chapter 1's chat, included — bills per <strong>token</strong>, not per character or
-          per word, and input and output tokens are usually priced separately. Before cost can be
-          estimated, text first has to be converted into the exact tokens a model would actually see.
+          Before a model can predict anything, whatever you type has to be converted into a form it
+          can actually read. This tutorial starts here, one level below the conversation itself: how
+          text becomes the individual pieces — <strong>tokens</strong> — a model processes one at a
+          time, and, since every hosted model bills per token rather than per character or word, what
+          a request built out of them actually costs. Chapter 2 picks up right where this leaves off:
+          an actual conversation with a model, generated one of these tokens at a time.
         </p>
 
         <h2 className="font-display text-lg font-bold text-paper-ink">
-          <span className="text-brand-600">5.1</span> Byte-Pair Encoding
+          <span className="text-brand-600">1.1</span> Byte-Pair Encoding
         </h2>
         <p>
           Every modern LLM tokenizer, including the ones behind GPT and Claude, is a variant of{" "}
@@ -170,7 +170,7 @@ export default function TokenizerPage() {
         </Analogy>
 
         <h2 className="font-display text-lg font-bold text-paper-ink">
-          <span className="text-brand-600">5.2</span> Turning Tokens into Dollars
+          <span className="text-brand-600">1.2</span> Turning Tokens into Dollars
         </h2>
         <p>
           Once text is tokenized, cost is just arithmetic: providers publish a price per million

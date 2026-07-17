@@ -13,7 +13,7 @@ export default function ChatPage() {
         <ChatWindow />
       </div>
 
-      <TextbookPage eyebrow="Chapter 1" title="Large Language Models" pageNumber="Page 1">
+      <TextbookPage eyebrow="Chapter 2" title="Large Language Models" pageNumber="Page 2">
         <p>
           A large language model, or LLM, is a type of AI system trained on enormous amounts of
           text to learn the statistical patterns of language. Its core task is deceptively simple:

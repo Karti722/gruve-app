@@ -7,7 +7,7 @@ export default function EnterprisePage() {
     <div className="space-y-10">
       <TextbookPage eyebrow="Chapter 8" title="These Concepts in the Real World" pageNumber="Page 8">
         <p>
-          Everything covered in the first three chapters — a conversation with a model, retrieval
+          Everything covered in Chapters 2 through 4 — a conversation with a model, retrieval
           grounding an answer in real documents, an agent deciding which tool to reach for — isn't
           just a teaching device. Each one is a pattern that large organizations have already put
           into production, at a scale of millions of users and, in some cases, hundreds of millions
@@ -19,7 +19,7 @@ export default function EnterprisePage() {
           <span className="text-brand-600">8.1</span> Conversational AI
         </h2>
         <p>
-          The plain chat interface from Chapter 1 is the most direct route into a business:
+          The plain chat interface from Chapter 2 is the most direct route into a business:
           replacing or augmenting a support queue that would otherwise require a person for every
           single conversation. The appeal is straightforward — a model can hold thousands of
           conversations at once, doesn't get tired, and can pull up a customer's history instantly.
@@ -64,7 +64,7 @@ export default function EnterprisePage() {
             Morgan Stanley Wealth Management built an internal assistant, "AI @ Morgan Stanley
             Assistant," on top of GPT-4, configured to generate answers exclusively from the firm's
             own library of roughly 100,000 research reports and internal documents — the same
-            grounding-in-retrieved-passages pattern from Chapter 2, just at institutional scale. The
+            grounding-in-retrieved-passages pattern from Chapter 3, just at institutional scale. The
             firm reported that the share of that library advisors could effectively search and use
             jumped from about 20% to 80%, and that queries that used to take an advisor over thirty
             minutes to research now take seconds. As of the tool's most recent reporting, over 98% of
@@ -76,22 +76,22 @@ export default function EnterprisePage() {
           <span className="text-brand-600">8.3</span> Vector Databases at Scale
         </h2>
         <p>
-          The demo in Chapter 2 searches a few dozen chunks of text — small enough that almost any
+          The demo in Chapter 3 searches a few dozen chunks of text — small enough that almost any
           approach would be fast. The reason production vector databases exist at all is what
           happens when that number grows past a company's entire catalog, all its users' behavior,
           or every document it has ever produced: exact comparison against every stored vector
-          stops being fast enough, and the approximate, index-based search described in Chapter 2
+          stops being fast enough, and the approximate, index-based search described in Chapter 3
           becomes a hard requirement rather than an optimization.
         </p>
 
         <CaseStudy company="Spotify">
           <p>
             In 2023, Spotify's engineering team open-sourced Voyager, an HNSW-based nearest-neighbor
-            search library — the same indexing approach from Chapter 2 — built to replace their
+            search library — the same indexing approach from Chapter 3 — built to replace their
             previous system for powering recommendation features like Discover Weekly. Spotify
             reported it runs roughly ten times faster while using about a quarter of the memory of
             what it replaced, and it's queried hundreds of millions of times a day in production.
-            The exact trade-off Chapter 2 describes an approximate index making — trading a small
+            The exact trade-off Chapter 3 describes an approximate index making — trading a small
             amount of accuracy for a large speed gain — is the whole reason the system exists.
           </p>
         </CaseStudy>
@@ -103,7 +103,7 @@ export default function EnterprisePage() {
           Agents earn their keep wherever a task is better described as "go accomplish this" than
           "answer this one question" — most visibly, so far, in software engineering itself, where
           an agent can read a codebase, make a change, run the result, and iterate, the same
-          think-act-observe loop from Chapter 3 applied to real production code.
+          think-act-observe loop from Chapter 4 applied to real production code.
         </p>
 
         <CaseStudy company="GitHub Copilot & Cognition's Devin">
@@ -149,7 +149,7 @@ export default function EnterprisePage() {
 
         <p>
           Five patterns, five real deployments, one throughline: none of this is speculative
-          technology. Every mechanism in Chapters 1 through 3 — the conversation, the retrieval, the
+          technology. Every mechanism in Chapters 2 through 4 — the conversation, the retrieval, the
           agent loop, the shared tool protocol — is already running in production, at a scale most
           software never reaches, inside companies you almost certainly already know.
         </p>

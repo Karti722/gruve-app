@@ -4,7 +4,7 @@ const TERMS = [
   {
     term: "Agent",
     definition:
-      "An AI system wrapped in a loop that lets it take actions — calling a tool, reading the result, and deciding what to do next — rather than only producing one reply. See Chapter 3.",
+      "An AI system wrapped in a loop that lets it take actions — calling a tool, reading the result, and deciding what to do next — rather than only producing one reply. See Chapter 4.",
     source: { label: "Yao et al., \"ReAct\" (2022)", href: "https://arxiv.org/abs/2210.03629" },
   },
   {
@@ -15,7 +15,7 @@ const TERMS = [
   {
     term: "Byte-Pair Encoding (BPE)",
     definition:
-      "The subword tokenization algorithm behind every modern LLM's tokenizer: starting from individual characters, the most frequent adjacent pair anywhere in a training corpus is merged into a new symbol, repeatedly, until common words become single tokens and rare ones fall back to smaller pieces. See Chapter 5.",
+      "The subword tokenization algorithm behind every modern LLM's tokenizer: starting from individual characters, the most frequent adjacent pair anywhere in a training corpus is merged into a new symbol, repeatedly, until common words become single tokens and rare ones fall back to smaller pieces. See Chapter 1.",
     source: {
       label: "Sennrich, Haddow & Birch, \"Neural Machine Translation of Rare Words with Subword Units\" (2015)",
       href: "https://arxiv.org/abs/1508.07909",
@@ -24,13 +24,13 @@ const TERMS = [
   {
     term: "Cosine Similarity",
     definition:
-      "A way of measuring how closely two embeddings point in the same direction, used to find the passages most relevant to a question. See Chapter 2.",
+      "A way of measuring how closely two embeddings point in the same direction, used to find the passages most relevant to a question. See Chapter 3.",
     source: { label: "Cosine similarity — Wikipedia", href: "https://en.wikipedia.org/wiki/Cosine_similarity" },
   },
   {
     term: "Embedding",
     definition:
-      "A list of numbers representing the meaning of a piece of text, positioned so that similar meanings end up close together. See Chapter 2.",
+      "A list of numbers representing the meaning of a piece of text, positioned so that similar meanings end up close together. See Chapter 3.",
     source: {
       label: "Mikolov et al., \"Efficient Estimation of Word Representations in Vector Space\" (2013)",
       href: "https://arxiv.org/abs/1301.3781",
@@ -48,7 +48,7 @@ const TERMS = [
   {
     term: "Hallucination",
     definition:
-      "A confident, fluent-sounding answer that is factually wrong, produced when a model is asked about something outside both its training and its current context. See Chapter 1.",
+      "A confident, fluent-sounding answer that is factually wrong, produced when a model is asked about something outside both its training and its current context. See Chapter 2.",
     source: {
       label: "Ji et al., \"Survey of Hallucination in Natural Language Generation\" (2022)",
       href: "https://arxiv.org/abs/2202.03629",
@@ -66,7 +66,7 @@ const TERMS = [
   {
     term: "MCP (Model Context Protocol)",
     definition:
-      "An open standard that lets any AI application discover and call tools exposed by any external service, without a custom integration for every pairing. See Chapter 3.",
+      "An open standard that lets any AI application discover and call tools exposed by any external service, without a custom integration for every pairing. See Chapter 4.",
     source: {
       label: "Anthropic, \"Introducing the Model Context Protocol\" (2024)",
       href: "https://www.anthropic.com/news/model-context-protocol",
@@ -80,13 +80,13 @@ const TERMS = [
   {
     term: "ReAct",
     definition:
-      "Short for \"reason and act\" — the think, act, observe, repeat cycle an agent follows: decide what's needed, call a tool, read the result, and decide again. See Chapter 3.",
+      "Short for \"reason and act\" — the think, act, observe, repeat cycle an agent follows: decide what's needed, call a tool, read the result, and decide again. See Chapter 4.",
     source: { label: "Yao et al., \"ReAct\" (2022)", href: "https://arxiv.org/abs/2210.03629" },
   },
   {
     term: "Retrieval-Augmented Generation (RAG)",
     definition:
-      "A technique that searches a document collection for relevant passages and supplies them to a language model before it answers, instead of relying on the model's memory alone. See Chapter 2.",
+      "A technique that searches a document collection for relevant passages and supplies them to a language model before it answers, instead of relying on the model's memory alone. See Chapter 3.",
     source: {
       label: "Lewis et al., \"Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks\" (2020)",
       href: "https://arxiv.org/abs/2005.11401",
@@ -109,7 +109,7 @@ const TERMS = [
   {
     term: "Token",
     definition:
-      "A small piece of text — often a whole word or a few characters — that is the basic unit a language model reads and generates, one at a time, and the unit every hosted model bills by. See Chapters 1 and 5.",
+      "A small piece of text — often a whole word or a few characters — that is the basic unit a language model reads and generates, one at a time, and the unit every hosted model bills by. See Chapters 1 and 2.",
     source: {
       label: "Vaswani et al., \"Attention Is All You Need\" (2017)",
       href: "https://arxiv.org/abs/1706.03762",
@@ -118,13 +118,13 @@ const TERMS = [
   {
     term: "Tool",
     definition:
-      "A defined capability — a calculator, a search function, a request to another system — that an agent is allowed to call, along with a description of what it does and what input it expects. See Chapter 3.",
+      "A defined capability — a calculator, a search function, a request to another system — that an agent is allowed to call, along with a description of what it does and what input it expects. See Chapter 4.",
     source: { label: "Yao et al., \"ReAct\" (2022)", href: "https://arxiv.org/abs/2210.03629" },
   },
   {
     term: "TextRank",
     definition:
-      "A graph-based ranking algorithm that scores each sentence in a document by how similar it is to every other sentence, then keeps the highest-scoring ones as an extractive summary — the same random-walk idea behind PageRank, applied to sentences instead of web pages. See Chapter 4.",
+      "A graph-based ranking algorithm that scores each sentence in a document by how similar it is to every other sentence, then keeps the highest-scoring ones as an extractive summary — the same random-walk idea behind PageRank, applied to sentences instead of web pages. See Chapter 5.",
     source: {
       label: "Mihalcea & Tarau, \"TextRank: Bringing Order into Text\" (2004)",
       href: "https://aclanthology.org/W04-3252/",
@@ -133,7 +133,7 @@ const TERMS = [
   {
     term: "TF-IDF (Term Frequency)",
     definition:
-      "A term-weighting scheme from information retrieval: words that occur often in a specific document, once common function words are filtered out, are a good signal of what that document is about. The keyword extraction in Chapter 4 uses the \"term frequency\" half of this idea.",
+      "A term-weighting scheme from information retrieval: words that occur often in a specific document, once common function words are filtered out, are a good signal of what that document is about. The keyword extraction in Chapter 5 uses the \"term frequency\" half of this idea.",
     source: {
       label: "Spärck Jones, \"A Statistical Interpretation of Term Specificity and Its Application in Retrieval\" (1972)",
       href: "https://www.emeraldinsight.com/doi/10.1108/eb026526",
@@ -142,7 +142,7 @@ const TERMS = [
   {
     term: "Vector Database",
     definition:
-      "A database built to store embeddings and quickly find the ones most similar to a given query, typically using an approximate index like HNSW at scale. See Chapters 2, 8, and 9.",
+      "A database built to store embeddings and quickly find the ones most similar to a given query, typically using an approximate index like HNSW at scale. See Chapters 3, 8, and 9.",
     source: {
       label: "pgvector — open-source vector search for Postgres",
       href: "https://github.com/pgvector/pgvector",
