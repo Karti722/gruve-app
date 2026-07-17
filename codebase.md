@@ -546,13 +546,13 @@ ten chapters and the glossary, each linking straight to its page.
 
 **Introduction (`/introduction`)**: front matter, not a numbered chapter: why this guide exists,
 the gap between what universities teach and what applied AI engineering actually looks like in
-practice, and what a reader should expect to get out of working through it.
+practice and what a reader should expect to get out of working through it.
 
 **Chapter 1: Tokenization and the Cost of a Request (`/tokenizer`)**: type text and see it split
 into real BPE tokens (trained live by the Python service), plus an estimated dollar cost at
 published per-model rates.
 
-**Chapter 2: LLM Chat (`/chat`)**: a chat window with a message history, an input box, and a
+**Chapter 2: LLM Chat (`/chat`)**: a chat window with a message history, an input box and a
 "MOCK MODE" / "LIVE · Anthropic" badge in the corner that reflects the backend's actual mode. Type
 a message and your bubble appears on the right, the assistant's reply on the left: a live
 back-and-forth conversation with real multi-turn history sent on every request.
@@ -560,13 +560,13 @@ back-and-forth conversation with real multi-turn history sent on every request.
 **Chapter 3: RAG (`/rag`)**: a question box with clickable sample questions. Ask something like
 *"What is the Model Context Protocol?"* and you'll see an **Answer** card followed by a
 **Retrieved sources** list: numbered citation cards each showing the source markdown file, a
-cosine-similarity score (computed by pgvector's HNSW index, not hand-rolled JS), and the exact
+cosine-similarity score (computed by pgvector's HNSW index, not hand-rolled JS) and the exact
 retrieved passage.
 
 **Chapter 4: AI Agent + MCP (`/agent`)**: a prompt box, an "Include tools from the MCP server"
-checkbox, and one-click sample prompts that trigger the calculator tool, the knowledge-base search
-tool, or (with MCP enabled) the weather tool living entirely inside the separate `mcp-server/`
-process. Each run renders a **Reasoning trace**: every tool call, its input, its result, and the
+checkbox and one-click sample prompts that trigger the calculator tool, the knowledge-base search
+tool or (with MCP enabled) the weather tool living entirely inside the separate `mcp-server/`
+process. Each run renders a **Reasoning trace**: every tool call, its input, its result and the
 final answer: the full think → act → observe → answer loop made visible.
 
 **Chapter 5: Automatic Text Summarization (`/summarize`)**: paste in a paragraph and choose how
@@ -579,7 +579,7 @@ paraphrase and an exact repeat; watch each one get replayed against an in-memory
 embedding similarity, with a hit/miss trace showing exactly why.
 
 **Chapter 7: Evaluating AI Outputs (`/eval`)**: enter a candidate answer and a reference answer;
-see it scored by exact match, ROUGE-L overlap, and semantic similarity, combined into one
+see it scored by exact match, ROUGE-L overlap and semantic similarity, combined into one
 composite score.
 
 **Chapter 8: These Concepts in the Real World (`/enterprise`)**: real companies (Klarna, Morgan
@@ -600,7 +600,7 @@ where it's explained and, where one exists, to a real primary source.
 ## 8. Notes
 
 - **Mock mode is not a lesser demo; it's the default one.** Every route, prompt template,
-  retrieval step, and tool call is real; only the final LLM call is canned (and always prefixed
+  retrieval step and tool call is real; only the final LLM call is canned (and always prefixed
   `[MOCK MODE]`). This means anyone can clone the repo and see the entire architecture work with
   zero API cost or setup friction.
 - **Never commit your `.env`.** It's already gitignored; `.env.example` is the only file meant to
