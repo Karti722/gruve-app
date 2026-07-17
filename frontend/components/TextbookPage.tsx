@@ -12,21 +12,21 @@ interface TextbookPageProps {
  */
 export function TextbookPage({ eyebrow, title, pageNumber, children }: TextbookPageProps) {
   return (
-    <div className="relative mx-auto max-w-3xl rounded-sm bg-paper px-7 py-9 font-serif text-paper-ink shadow-[0_20px_45px_-25px_rgba(43,38,32,0.35)] sm:px-14 sm:py-14">
+    <div className="relative mx-auto max-w-3xl rounded-sm bg-paper px-5 py-7 font-serif text-paper-ink shadow-[0_20px_45px_-25px_rgba(43,38,32,0.35)] sm:px-14 sm:py-14">
       <div
-        className="pointer-events-none absolute right-0 top-0 h-9 w-9 bg-paper-dark"
+        className="pointer-events-none absolute right-0 top-0 h-7 w-7 bg-paper-dark sm:h-9 sm:w-9"
         style={{ clipPath: "polygon(100% 0, 0 0, 100% 100%)" }}
         aria-hidden
       />
       <div
-        className="pointer-events-none absolute inset-y-0 left-8 w-px bg-paper-ink/10 sm:left-12"
+        className="pointer-events-none absolute inset-y-0 left-12 hidden w-px bg-paper-ink/10 sm:block"
         aria-hidden
       />
 
-      <p className="font-display text-xs font-bold uppercase tracking-[0.25em] text-brand-600">
+      <p className="font-display text-xs font-bold uppercase tracking-[0.2em] text-brand-600 sm:tracking-[0.25em]">
         {eyebrow}
       </p>
-      <h1 className="mt-2 font-display text-3xl font-bold leading-tight tracking-tight text-paper-ink sm:text-4xl">
+      <h1 className="mt-2 font-display text-2xl font-bold leading-tight tracking-tight text-paper-ink sm:text-4xl">
         {title}
       </h1>
 

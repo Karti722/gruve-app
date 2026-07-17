@@ -50,7 +50,7 @@ export function KnowledgeBaseBrowser() {
 
         {sources.length > 0 && (
           <select
-            className="input w-auto min-w-[240px] cursor-pointer"
+            className="input w-full cursor-pointer sm:w-auto sm:min-w-[240px]"
             value={selected}
             onChange={(e) => setSelected(e.target.value)}
             aria-label="Choose a knowledge base article"

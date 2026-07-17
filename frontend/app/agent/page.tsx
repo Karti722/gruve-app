@@ -5,6 +5,7 @@ import { runAgent, type AgentTraceStep } from "@/lib/api";
 import { AgentTrace } from "@/components/AgentTrace";
 import { Analogy } from "@/components/Analogy";
 import { TextbookPage } from "@/components/TextbookPage";
+import { Sources } from "@/components/Sources";
 
 const SAMPLE_PROMPTS = [
   { label: "Do some math", prompt: "What's 18% of 240?" },
@@ -49,7 +50,7 @@ export default function AgentPage() {
               e.preventDefault();
               run(message);
             }}
-            className="flex gap-2"
+            className="flex flex-col gap-2 sm:flex-row"
           >
             <input
               className="input"
@@ -58,7 +59,11 @@ export default function AgentPage() {
               onChange={(e) => setMessage(e.target.value)}
               disabled={loading}
             />
-            <button type="submit" className="btn-primary" disabled={loading || !message.trim()}>
+            <button
+              type="submit"
+              className="btn-primary shrink-0"
+              disabled={loading || !message.trim()}
+            >
               Run
             </button>
           </form>
@@ -192,6 +197,23 @@ export default function AgentPage() {
           called, exactly what it sent, what came back, and finally its answer, so you can see its
           thinking instead of just the result.
         </p>
+
+        <Sources
+          items={[
+            {
+              label: "Yao et al., \"ReAct: Synergizing Reasoning and Acting in Language Models\" (2022)",
+              href: "https://arxiv.org/abs/2210.03629",
+            },
+            {
+              label: "Anthropic, \"Introducing the Model Context Protocol\" (November 2024)",
+              href: "https://www.anthropic.com/news/model-context-protocol",
+            },
+            {
+              label: "Model Context Protocol — official specification and documentation",
+              href: "https://modelcontextprotocol.io",
+            },
+          ]}
+        />
       </TextbookPage>
     </div>
   );

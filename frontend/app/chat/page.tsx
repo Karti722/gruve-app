@@ -1,6 +1,7 @@
 import { ChatWindow } from "@/components/ChatWindow";
 import { Analogy } from "@/components/Analogy";
 import { TextbookPage } from "@/components/TextbookPage";
+import { Sources } from "@/components/Sources";
 
 export default function ChatPage() {
   return (
@@ -58,6 +59,19 @@ export default function ChatPage() {
           ask a follow-up that only makes sense in light of what you already discussed — you should
           see the model respond as though it remembers, for exactly the reason explained above.
         </p>
+
+        <Sources
+          items={[
+            {
+              label: "Vaswani et al., \"Attention Is All You Need\" (2017) — the paper that introduced the Transformer architecture almost every modern LLM is built on",
+              href: "https://arxiv.org/abs/1706.03762",
+            },
+            {
+              label: "Ji et al., \"Survey of Hallucination in Natural Language Generation\" (2022)",
+              href: "https://arxiv.org/abs/2202.03629",
+            },
+          ]}
+        />
       </TextbookPage>
     </div>
   );

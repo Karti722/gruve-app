@@ -1,5 +1,6 @@
 import { TextbookPage } from "@/components/TextbookPage";
 import { CaseStudy } from "@/components/CaseStudy";
+import { Sources } from "@/components/Sources";
 
 export default function EnterprisePage() {
   return (
@@ -85,12 +86,13 @@ export default function EnterprisePage() {
 
         <CaseStudy company="Spotify">
           <p>
-            Spotify's recommendation system stores embeddings for roughly 500 million songs and
-            podcasts — around 420 billion vectors — and serves similarity queries across that space
-            in under 50 milliseconds. Reporting on the system found that an equivalent exact search
-            using a traditional database took roughly 2 seconds per query, about 40 times slower —
-            the exact trade-off Chapter 2 describes an Approximate Nearest Neighbor index making, at
-            a scale where the difference is the whole product.
+            In 2023, Spotify's engineering team open-sourced Voyager, an HNSW-based nearest-neighbor
+            search library — the same indexing approach from Chapter 2 — built to replace their
+            previous system for powering recommendation features like Discover Weekly. Spotify
+            reported it runs roughly ten times faster while using about a quarter of the memory of
+            what it replaced, and it's queried hundreds of millions of times a day in production.
+            The exact trade-off Chapter 2 describes an approximate index making — trading a small
+            amount of accuracy for a large speed gain — is the whole reason the system exists.
           </p>
         </CaseStudy>
 
@@ -151,6 +153,35 @@ export default function EnterprisePage() {
           agent loop, the shared tool protocol — is already running in production, at a scale most
           software never reaches, inside companies you almost certainly already know.
         </p>
+
+        <Sources
+          items={[
+            {
+              label: "Klarna — \"Klarna AI assistant handles two-thirds of customer service chats in its first month\" (official press release)",
+              href: "https://www.klarna.com/international/press/klarna-ai-assistant-handles-two-thirds-of-customer-service-chats-in-its-first-month/",
+            },
+            {
+              label: "Morgan Stanley — \"Key Milestone in Innovation Journey with OpenAI\" (official press release)",
+              href: "https://www.morganstanley.com/press-releases/key-milestone-in-innovation-journey-with-openai",
+            },
+            {
+              label: "Spotify Engineering — \"Introducing Voyager: Spotify's New Nearest-Neighbor Search Library\" (2023)",
+              href: "https://engineering.atspotify.com/2023/10/introducing-voyager-spotifys-new-nearest-neighbor-search-library",
+            },
+            {
+              label: "TechCrunch — \"GitHub Copilot crosses 20M all-time users\" (July 2025)",
+              href: "https://techcrunch.com/2025/07/30/github-copilot-crosses-20-million-all-time-users/",
+            },
+            {
+              label: "CNBC — \"Goldman Sachs autonomous coder pilot marks major AI milestone\" (July 2025)",
+              href: "https://www.cnbc.com/2025/07/11/goldman-sachs-autonomous-coder-pilot-marks-major-ai-milestone.html",
+            },
+            {
+              label: "Anthropic — \"Donating the Model Context Protocol and establishing the Agentic AI Foundation\" (December 2025)",
+              href: "https://www.anthropic.com/news/donating-the-model-context-protocol-and-establishing-of-the-agentic-ai-foundation",
+            },
+          ]}
+        />
       </TextbookPage>
     </div>
   );

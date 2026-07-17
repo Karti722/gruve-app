@@ -42,7 +42,7 @@ export function ChatWindow() {
   }
 
   return (
-    <div className="card flex h-[32rem] flex-col">
+    <div className="card flex h-[24rem] flex-col sm:h-[32rem]">
       <div className="mb-4 flex items-center justify-between border-b border-paper-ink/10 pb-3">
         <h2 className="font-display text-xs font-bold uppercase tracking-[0.2em] text-paper-ink/50">
           Transcript
@@ -91,7 +91,10 @@ export function ChatWindow() {
         {error && <p className="text-sm text-red-600">Error: {error}</p>}
       </div>
 
-      <form onSubmit={handleSubmit} className="mt-4 flex gap-2 border-t border-paper-ink/10 pt-4">
+      <form
+        onSubmit={handleSubmit}
+        className="mt-4 flex flex-col gap-2 border-t border-paper-ink/10 pt-4 sm:flex-row"
+      >
         <input
           className="input"
           placeholder="Type a message…"
@@ -99,7 +102,11 @@ export function ChatWindow() {
           onChange={(e) => setInput(e.target.value)}
           disabled={loading}
         />
-        <button type="submit" className="btn-primary" disabled={loading || !input.trim()}>
+        <button
+          type="submit"
+          className="btn-primary shrink-0"
+          disabled={loading || !input.trim()}
+        >
           Send
         </button>
       </form>

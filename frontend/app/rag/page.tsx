@@ -6,6 +6,7 @@ import { SourceCitation } from "@/components/SourceCitation";
 import { KnowledgeBaseBrowser } from "@/components/KnowledgeBaseBrowser";
 import { Analogy } from "@/components/Analogy";
 import { TextbookPage } from "@/components/TextbookPage";
+import { Sources } from "@/components/Sources";
 
 const SAMPLE_QUESTIONS = [
   "What is the Model Context Protocol?",
@@ -51,7 +52,7 @@ export default function RagPage() {
               e.preventDefault();
               runQuery(question);
             }}
-            className="flex gap-2"
+            className="flex flex-col gap-2 sm:flex-row"
           >
             <input
               className="input"
@@ -60,7 +61,11 @@ export default function RagPage() {
               onChange={(e) => setQuestion(e.target.value)}
               disabled={loading}
             />
-            <button type="submit" className="btn-primary" disabled={loading || !question.trim()}>
+            <button
+              type="submit"
+              className="btn-primary shrink-0"
+              disabled={loading || !question.trim()}
+            >
               Ask
             </button>
           </form>
@@ -181,6 +186,27 @@ export default function RagPage() {
           seen above: the answer itself, and the numbered source passages underneath it that were
           retrieved to produce that answer.
         </p>
+
+        <Sources
+          items={[
+            {
+              label: "Mikolov et al., \"Efficient Estimation of Word Representations in Vector Space\" (2013) — the word2vec paper that popularized dense text embeddings",
+              href: "https://arxiv.org/abs/1301.3781",
+            },
+            {
+              label: "Lewis et al., \"Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks\" (2020) — the paper that coined \"RAG\"",
+              href: "https://arxiv.org/abs/2005.11401",
+            },
+            {
+              label: "Malkov & Yashunin, \"Efficient and Robust Approximate Nearest Neighbor Search Using HNSW Graphs\" (2016)",
+              href: "https://arxiv.org/abs/1603.09320",
+            },
+            {
+              label: "pgvector — the open-source Postgres extension that implements this in a real, production vector database",
+              href: "https://github.com/pgvector/pgvector",
+            },
+          ]}
+        />
       </TextbookPage>
     </div>
   );

@@ -1,11 +1,12 @@
 import { TextbookPage } from "@/components/TextbookPage";
 import { Analogy } from "@/components/Analogy";
 import { ArchitectureDiagram } from "@/components/ArchitectureDiagram";
+import { Sources } from "@/components/Sources";
 
 export default function ArchitecturePage() {
   return (
     <div className="space-y-10">
-      <TextbookPage eyebrow="Chapter 5" title="How This Tutorial Is Built" pageNumber="Page 5">
+      <TextbookPage eyebrow="Chapter 5" title="The System Behind This Tutorial" pageNumber="Page 5">
         <p>
           Every chapter so far has explained a concept and then let you try it. This chapter turns
           the lens on the tutorial itself: what's actually running behind these pages, and why it's
@@ -106,6 +107,23 @@ export default function ArchitecturePage() {
           sharing internal state — the same shape the real companies in Chapter 4 run at a much
           larger scale, just small enough here to read in one sitting.
         </p>
+
+        <Sources
+          items={[
+            {
+              label: "pgvector — the Postgres extension actually running this tutorial's vector database",
+              href: "https://github.com/pgvector/pgvector",
+            },
+            {
+              label: "Malkov & Yashunin, \"Efficient and Robust Approximate Nearest Neighbor Search Using HNSW Graphs\" (2016)",
+              href: "https://arxiv.org/abs/1603.09320",
+            },
+            {
+              label: "Model Context Protocol — official specification and documentation",
+              href: "https://modelcontextprotocol.io",
+            },
+          ]}
+        />
       </TextbookPage>
     </div>
   );
