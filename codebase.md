@@ -422,7 +422,12 @@ endpoint:
   extractive summarization (a graph/PageRank-style ranking over the sentences' own embeddings),
   plus term-frequency keyword extraction and Flesch/Flesch-Kincaid readability scoring for both the
   original text and the generated summary. This is the extractive half of Chapter 5's toggle; the
-  abstractive half is a Claude call living entirely in the Node backend, not here.
+  abstractive half is a Claude call living entirely in the Node backend, not here. The similarity
+  graph explicitly zeroes each sentence's similarity with itself before ranking: cosine similarity
+  of a sentence against itself is always 1.0, which otherwise creates a self-loop letting a
+  genuinely irrelevant, disconnected sentence settle at the uninformative uniform 1/n score instead
+  of ranking low, exactly the bug this once had; a fully-disconnected sentence's rank is
+  redistributed uniformly across the graph instead (the standard PageRank fix for dangling nodes).
 - **`POST /tokenize`** (`tokenizer.py`): a byte-pair encoding tokenizer trained from scratch, at
   import time, on a small bundled corpus (real BPE, the same algorithm behind GPT's and Claude's
   tokenizers, just trained on kilobytes instead of the corpora production tokenizers use), plus a
