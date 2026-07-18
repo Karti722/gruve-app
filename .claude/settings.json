@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -n '^\\\\*\\\\*Where: Your local terminal\\\\.\\\\*\\\\*$\\\\|^\\\\*\\\\*Where: Your local terminal\\\\*\\\\*, then' \"c:/Users/karti/OneDrive/Desktop/ai-nexus/deployment.md\")"
+    ]
+  }
+}

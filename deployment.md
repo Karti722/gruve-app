@@ -94,15 +94,27 @@ project-creation screen, not a command.
    ```
 2. **(Your browser)** Install Git, if you don't already have it:
    [git-scm.com/downloads](https://git-scm.com/downloads).
-3. **(Your local terminal)** Clone this repository:
+3. **(Your local terminal, starting directory doesn't matter yet)** `ai-nexus/` doesn't exist on
+   your machine until this command creates it, so run this one from wherever you keep projects,
+   e.g. `C:\Users\YOU\Documents` or your Desktop, PowerShell's default starting folder is fine too:
    ```powershell
    git clone YOUR_REPO_URL
    ```
-   Then move into the folder it just created. Every command in the rest of this guide assumes
-   your terminal is sitting in this exact folder:
+   This creates a new `ai-nexus` folder inside wherever you ran that command. Move into it now:
    ```powershell
    cd ai-nexus
    ```
+   This is the **root** of the project, not a subfolder inside it, one level up from `backend/`,
+   `frontend/`, `python-service/` and `mcp-server/`, which all sit alongside each other inside it.
+   Confirm you're in the right place, this should list `docker-compose.yml` along with those four
+   folders:
+   ```powershell
+   dir
+   ```
+   **From this point on, every single command in this entire guide is run from inside this exact
+   root folder, `ai-nexus/` itself, never one of the subfolders you just saw listed, with no
+   exceptions.** Whatever folder `cd ai-nexus` just put you in, that's it, for every remaining
+   step.
 4. **(Your browser)** Get an API key at [console.anthropic.com](https://console.anthropic.com/).
    This guide sets the deployed app up with a real key so it gives real Claude responses, not the
    canned `[MOCK MODE]` replies you'd get without one, see "About mock mode" right below for what
@@ -216,24 +228,30 @@ covers demo/personal traffic, so this whole path is $0/month.
    [cloud.google.com/sdk/docs/install](https://cloud.google.com/sdk/docs/install). The Windows
    installer adds `gcloud` to PowerShell automatically; close and reopen PowerShell after
    installing so it picks up the new command.
-4. **(Your local terminal)** Log in. This opens a browser window just to confirm the login, then
-   control returns to PowerShell:
+Items 4, 5, 6 and 8 below don't actually care which folder you're in, `gcloud auth`/`gcloud
+config` store their state per-user, not per-folder. Stay in the `ai-nexus` root folder anyway (that's
+where you already are after "Before you start"), it's one less thing to think about, and it's
+where you need to be starting with Step 2 regardless.
+
+4. **(Your local terminal, in the `ai-nexus` root folder)** Log in. This opens a browser window just
+   to confirm the login, then control returns to PowerShell:
    ```powershell
    gcloud auth login
    ```
-5. **(Your local terminal)** Select your project:
+5. **(Your local terminal, in the `ai-nexus` root folder)** Select your project:
    ```powershell
    gcloud config set project YOUR_PROJECT_ID
    ```
-6. **(Your local terminal)** Confirm it took effect, this should print back `YOUR_PROJECT_ID`:
+6. **(Your local terminal, in the `ai-nexus` root folder)** Confirm it took effect, this should print
+   back `YOUR_PROJECT_ID`:
    ```powershell
    gcloud config get-value project
    ```
 7. **(Your browser, back in the Cloud Console)** Turn on billing for the project (required by
    Google even for free-tier usage): go to **Billing** in the left sidebar and link a billing
    account to this project.
-8. **(Your local terminal)** Turn on the three Google APIs this guide uses (this is one single
-   command, with three API names as its arguments):
+8. **(Your local terminal, in the `ai-nexus` root folder)** Turn on the three Google APIs this guide
+   uses (this is one single command, with three API names as its arguments):
    ```powershell
    gcloud services enable run.googleapis.com artifactregistry.googleapis.com secretmanager.googleapis.com
    ```
@@ -260,7 +278,7 @@ its tables the first time it connects.
 
 ### Step 2: Build and push the container images
 
-**Where: Your local terminal, in the `ai-nexus` folder.**
+**Where: Your local terminal, in the `ai-nexus` root folder.**
 
 1. Create the image registry:
    ```powershell
@@ -291,7 +309,7 @@ its tables the first time it connects.
 
 ### Step 3: Store your database connection string and API key as secrets
 
-**Where: Your local terminal.**
+**Where: Your local terminal, in the `ai-nexus` root folder.**
 
 `gcloud secrets create` reads its value from a file, not typed inline, so write each one to a
 small temporary file first, create the secret, then delete the file. You're creating two secrets
@@ -325,7 +343,7 @@ and 4 here, and skip `ANTHROPIC_API_KEY` in Step 4's `--set-secrets` flag below 
 
 ### Step 4: Deploy the backend and python-service
 
-**Where: Your local terminal.**
+**Where: Your local terminal, in the `ai-nexus` root folder.**
 
 1. Deploy `python-service` first (`backend` needs to know its address):
    ```powershell
@@ -371,7 +389,7 @@ and 4 here, and skip `ANTHROPIC_API_KEY` in Step 4's `--set-secrets` flag below 
 
 ### Step 5: Build and deploy the frontend
 
-**Where: Your local terminal, still in the `ai-nexus` folder, same window as Step 4** (so
+**Where: Your local terminal, still in the `ai-nexus` root folder, same window as Step 4** (so
 `$backendUrl` is still set; if you closed it, re-run the one-line command from the end of Step 4
 first). The `frontend` at the end of the `docker build` command below is a build-context argument,
 not a folder to `cd` into.
@@ -395,7 +413,7 @@ not a folder to `cd` into.
 
 ### Step 6: Point the backend at the now-deployed frontend
 
-**Where: Your local terminal.**
+**Where: Your local terminal, in the `ai-nexus` root folder.**
 
 1. Save the frontend's address into a variable:
    ```powershell
@@ -412,7 +430,7 @@ not a folder to `cd` into.
 
 ### Step 7: Confirm it's actually working
 
-**Where: Your local terminal**, then **your browser**.
+**Where: Your local terminal, in the `ai-nexus` root folder**, then **your browser**.
 
 1. Check the backend's logs:
    ```powershell
