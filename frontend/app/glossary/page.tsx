@@ -124,7 +124,7 @@ const TERMS = [
   {
     term: "TextRank",
     definition:
-      "A graph-based ranking algorithm that scores each sentence in a document by how similar it is to every other sentence, then keeps the highest-scoring ones as an extractive summary, the same random-walk idea behind PageRank, applied to sentences instead of web pages. See Chapter 5.",
+      "A graph-based ranking algorithm that scores each sentence in a document by how similar it is to every other sentence, then keeps the highest-scoring ones as an extractive summary, the same random-walk idea behind PageRank, applied to sentences instead of web pages. See Chapter 5's extractive mode.",
     source: {
       label: "Mihalcea & Tarau, \"TextRank: Bringing Order into Text\" (2004)",
       href: "https://aclanthology.org/W04-3252/",
@@ -133,7 +133,7 @@ const TERMS = [
   {
     term: "TF-IDF (Term Frequency)",
     definition:
-      "A term-weighting scheme from information retrieval: words that occur often in a specific document, once common function words are filtered out, are a good signal of what that document is about. The keyword extraction in Chapter 5 uses the \"term frequency\" half of this idea.",
+      "A term-weighting scheme from information retrieval: words that occur often in a specific document, once common function words are filtered out, are a good signal of what that document is about. Chapter 5's extractive mode uses the \"term frequency\" half of this idea for its keyword extraction.",
     source: {
       label: "Spärck Jones, \"A Statistical Interpretation of Term Specificity and Its Application in Retrieval\" (1972)",
       href: "https://www.emeraldinsight.com/doi/10.1108/eb026526",

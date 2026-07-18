@@ -6,12 +6,19 @@ Demonstrates: Python, REST APIs and a polyglot microservices architecture
 these text-processing concerns isolated and independently deployable/
 scalable from the chat/agent/RAG orchestration layer). Endpoints:
 /embed for the RAG demo's vector search; /summarize for extractive
-summarization (plus keyword extraction and readability scoring);
-/tokenize for BPE tokenization and per-model cost estimation; /cache-sim
-for a semantic-caching simulation; and /evaluate for a small LLM-output
-evaluation harness, the last three modeling everyday applied AI
-engineering concerns (token cost, caching and evals) rather than a
+(TextRank) summarization, plus keyword extraction and readability
+scoring; /tokenize for BPE tokenization and per-model cost estimation;
+/cache-sim for a semantic-caching simulation; and /evaluate for a small
+LLM-output evaluation harness, the last three modeling everyday applied
+AI engineering concerns (token cost, caching and evals) rather than a
 single user-facing demo technique.
+
+The Chapter 5 summarize page can also produce an abstractive summary (a
+real Claude call asking the model to paraphrase, via
+backend/src/routes/summarize.route.ts and buildSummarizePrompt) as a
+second mode, entirely on the Node side; this service only ever hosts the
+extractive path, since abstractive generation is an LLM call, not an
+algorithm this service would implement.
 """
 
 import os

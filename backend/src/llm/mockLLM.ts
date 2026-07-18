@@ -17,13 +17,26 @@ const PERCENT_OF = /(-?\d+(?:\.\d+)?)\s*%\s*of\s*(-?\d+(?:\.\d+)?)/i;
  * "[MOCK MODE]" so it's never mistaken for a real model output.
  */
 export class MockLLMClient implements LLMClient {
-  async chat(messages: ChatMessage[], _systemPrompt: string): Promise<string> {
+  async chat(messages: ChatMessage[], systemPrompt: string): Promise<string> {
     const lastUser = [...messages].reverse().find((m) => m.role === "user");
-    const question = lastUser?.content ?? "";
+    const content = lastUser?.content ?? "";
+
+    // Summarization's input is a pasted document, not a question, so "You
+    // asked: <500-word paragraph>" would read oddly; give it its own canned
+    // shape instead.
+    if (systemPrompt.startsWith("You are a summarization assistant")) {
+      const wordCount = content.trim().split(/\s+/).filter(Boolean).length;
+      const firstSentence = content.match(/^.*?[.!?](?=\s|$)/)?.[0] ?? content;
+      return (
+        `[MOCK MODE: set ANTHROPIC_API_KEY in .env for real Claude responses]\n\n` +
+        `A real Claude call would paraphrase your ${wordCount}-word input into a short summary ` +
+        `here. As a placeholder, here's just its first sentence: "${firstSentence}"`
+      );
+    }
 
     return (
       `[MOCK MODE: set ANTHROPIC_API_KEY in .env for real Claude responses]\n\n` +
-      `You asked: "${question}"\n\n` +
+      `You asked: "${content}"\n\n` +
       `Here's a canned-but-structured reply demonstrating the chat pipeline: the request hit ` +
       `the Express REST API, was wrapped with a system prompt and would normally stream back ` +
       `token-by-token from Claude. Everything downstream (routing, prompt templates, message ` +

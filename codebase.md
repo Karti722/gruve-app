@@ -14,7 +14,7 @@ together by using them directly.
 | AI agents & tool use | `backend/src/agent/` + `/agent` page |
 | Model Context Protocol (MCP) | `mcp-server/` (a real MCP server) + `backend/src/agent/mcpClient.ts` (a real MCP client) |
 | Vector databases & embeddings | `backend/src/rag/vectorStore.ts` (real pgvector + HNSW index), `backend/src/rag/embeddingsClient.ts` |
-| Automatic summarization | `python-service/app/summarizer.py` (TextRank) + `/summarize` page |
+| Automatic summarization | `backend/src/routes/summarize.route.ts`, a toggle between abstractive (a real Claude call) and extractive (`python-service/app/summarizer.py`, TextRank) + `/summarize` page |
 | Tokenization & cost estimation | `python-service/app/tokenizer.py` (from-scratch BPE) + `/tokenizer` page |
 | Semantic caching | `python-service/app/semantic_cache.py` + `/cache` page |
 | Evaluating AI outputs | `python-service/app/eval.py` + `/eval` page |
@@ -59,10 +59,13 @@ serialization boundary between "the code that talks to Claude" and "the code tha
 orchestrate anything, hold conversation state, call the LLM or know what a "chat" or "agent" is.
 Every one of its endpoints is a pure function's worth of responsibility: text in, a number or a
 small structured result out: `/embed` (text → vector), `/summarize` (text → ranked sentences +
-keywords + readability), `/tokenize` (text → tokens + cost estimate), `/cache-sim` (a list of
-queries → hit/miss trace), `/evaluate` (two strings → similarity scores). None of them need to
-know about any other endpoint, which is exactly the property that makes them safe to group into one
-small service instead of five.
+keywords + readability, the extractive path only), `/tokenize` (text → tokens + cost estimate),
+`/cache-sim` (a list of queries → hit/miss trace), `/evaluate` (two strings → similarity scores).
+None of them need to know about any other endpoint, which is exactly the property that makes them
+safe to group into one small service instead of five. Summarization's *other* mode, abstractive,
+deliberately isn't here at all: it's a real Claude call, which means it belongs with the rest of
+the LLM-calling orchestration in the Node backend (`summarize.route.ts` calls `llmClient` directly
+for that mode), not with this service's dependency-free, no-model-call algorithms.
 
 **Why a separate service at all, instead of writing all of this directly in the Node backend?**
 Two reasons, one practical and one pedagogical. Practically, Python is where the ecosystem for this
@@ -222,7 +225,7 @@ ai-nexus/
 │       │   ├── mcpClient.ts       # MCP client: spawns & talks to mcp-server/
 │       │   └── agentLoop.ts       # the think → act → observe → answer loop
 │       ├── summarize/
-│       │   └── summarizeClient.ts # calls python-service's /summarize
+│       │   └── summarizeClient.ts # calls python-service's /summarize (extractive mode only)
 │       ├── tokenizer/
 │       │   └── tokenizerClient.ts # calls python-service's /tokenize
 │       ├── cache/
@@ -233,7 +236,7 @@ ai-nexus/
 │       │   ├── chat.route.ts      # POST /api/chat
 │       │   ├── rag.route.ts       # POST /api/rag/query
 │       │   ├── agent.route.ts     # POST /api/agent/run
-│       │   ├── summarize.route.ts # POST /api/summarize
+│       │   ├── summarize.route.ts # POST /api/summarize (mode: "abstractive" calls llmClient, "extractive" calls python-service)
 │       │   ├── tokenizer.route.ts # POST /api/tokenize
 │       │   ├── cache.route.ts     # POST /api/cache-sim
 │       │   └── eval.route.ts      # POST /api/evaluate
@@ -287,7 +290,7 @@ ai-nexus/
         ├── chat/page.tsx            # Ch.2: LLM chat demo
         ├── rag/page.tsx             # Ch.3: RAG demo
         ├── agent/page.tsx           # Ch.4: AI agent + MCP demo
-        ├── summarize/page.tsx       # Ch.5: extractive summarization demo
+        ├── summarize/page.tsx       # Ch.5: toggle between abstractive (Claude) and extractive (TextRank) summarization
         ├── cache/page.tsx           # Ch.6: semantic caching demo
         ├── eval/page.tsx            # Ch.7: AI-output evaluation demo
         ├── enterprise/page.tsx      # Ch.8: real-world case studies
@@ -374,7 +377,10 @@ ai-nexus/
   **`src/cache/cacheClient.ts`**, **`src/eval/evalClient.ts`**: one thin client per Python-service
   endpoint, all following the same shape as `embeddingsClient.ts`'s HTTP call: POST, translate the
   Python service's `snake_case` JSON into the rest of the app's `camelCase` convention, throw a
-  clear error on failure. None of the Python-service clients, embeddings included, have an
+  clear error on failure. `summarizeClient.ts` only covers the *extractive* mode; abstractive mode
+  has no client here at all, since `summarize.route.ts` calls `llmClient` directly for that mode,
+  the same as chat/RAG/agent. None of the Python-service clients, embeddings
+  included, have an
   in-process fallback: each is a feature nothing else in the app depends on (or, for embeddings,
   one where a silent fallback risked corrupting the seeded vector store), so a clear error is
   preferable to a silently degraded response.
@@ -415,7 +421,8 @@ endpoint:
 - **`POST /summarize`** (`summarizer.py`, `keywords.py`, `readability.py`): real TextRank
   extractive summarization (a graph/PageRank-style ranking over the sentences' own embeddings),
   plus term-frequency keyword extraction and Flesch/Flesch-Kincaid readability scoring for both the
-  original text and the generated summary.
+  original text and the generated summary. This is the extractive half of Chapter 5's toggle; the
+  abstractive half is a Claude call living entirely in the Node backend, not here.
 - **`POST /tokenize`** (`tokenizer.py`): a byte-pair encoding tokenizer trained from scratch, at
   import time, on a small bundled corpus (real BPE, the same algorithm behind GPT's and Claude's
   tokenizers, just trained on kilobytes instead of the corpora production tokenizers use), plus a
@@ -589,10 +596,11 @@ tool or (with MCP enabled) the weather tool living entirely inside the separate 
 process. Each run renders a **Reasoning trace**: every tool call, its input, its result and the
 final answer: the full think → act → observe → answer loop made visible.
 
-**Chapter 5: Automatic Text Summarization (`/summarize`)**: paste in a paragraph and choose how
-many sentences to extract; TextRank scores every sentence and returns the top-ranked ones in
-original order, alongside extracted keywords and a before/after Flesch-Kincaid readability
-comparison.
+**Chapter 5: Automatic Text Summarization (`/summarize`)**: paste in a paragraph and toggle between
+two real, working modes. Abstractive drops the text into a prompt asking Claude to paraphrase it
+in its own words, the same chat-completion path Chapter 2 uses. Extractive runs TextRank, scoring
+every sentence and returning the top-ranked ones in original order, alongside extracted keywords
+and a before/after Flesch-Kincaid readability comparison, with no model call at all.
 
 **Chapter 6: Semantic Caching (`/cache`)**: paste a list of queries, one per line, including a
 paraphrase and an exact repeat; watch each one get replayed against an in-memory cache keyed by
@@ -645,3 +653,8 @@ where it's explained and, where one exists, to a real primary source.
   TextRank summarizer and hashing embeddings are all real implementations of real algorithms,
   just trained or run on far less data than a production system would use, exactly as each
   module's docstring explains. None of them call out to a hosted model or fabricate output.
+  Chapter 5's *abstractive* summarization mode is the one deliberate exception to "no hosted model
+  call" anywhere in this service's territory, and it lives entirely in the Node backend instead,
+  precisely so this distinction stays clean: see Chapter 5's own prose for why extractive and
+  abstractive summarization are a genuinely different cost/trust trade-off, not one being strictly
+  better than the other.

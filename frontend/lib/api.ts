@@ -93,6 +93,14 @@ export function runAgent(message: string, useMcp: boolean): Promise<AgentRespons
   return postJson<AgentResponse>("/api/agent/run", { message, useMcp });
 }
 
+export type SummarizeMode = "abstractive" | "extractive";
+
+export interface AbstractiveSummarizeResponse {
+  mode: "abstractive";
+  summary: string;
+  mock: boolean;
+}
+
 export interface RankedSentence {
   text: string;
   index: number;
@@ -106,7 +114,8 @@ export interface ReadabilityScore {
   sentenceCount: number;
 }
 
-export interface SummarizeResponse {
+export interface ExtractiveSummarizeResponse {
+  mode: "extractive";
   sentences: RankedSentence[];
   totalSentences: number;
   keywords: string[];
@@ -114,8 +123,14 @@ export interface SummarizeResponse {
   summaryReadability: ReadabilityScore;
 }
 
-export function summarizeText(text: string, sentenceCount: number): Promise<SummarizeResponse> {
-  return postJson<SummarizeResponse>("/api/summarize", { text, sentenceCount });
+export type SummarizeResponse = AbstractiveSummarizeResponse | ExtractiveSummarizeResponse;
+
+export function summarizeText(
+  text: string,
+  sentenceCount: number,
+  mode: SummarizeMode
+): Promise<SummarizeResponse> {
+  return postJson<SummarizeResponse>("/api/summarize", { text, sentenceCount, mode });
 }
 
 export interface CostEstimate {

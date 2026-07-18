@@ -129,7 +129,7 @@ Four pieces, mirroring `docker-compose.yml`:
 |---|---|---|
 | `frontend` | The Next.js website, what you open in a browser | **Public** |
 | `backend` | The Express API the frontend and any API client talks to | **Public** |
-| `python-service` | A FastAPI microservice doing embeddings, summarization, evaluation | **Internal only**, just `backend` talks to it |
+| `python-service` | A FastAPI microservice doing embeddings, extractive summarization, tokenization, caching and evaluation | **Internal only**, just `backend` talks to it |
 | `postgres` | A managed Postgres database with the `pgvector` extension | **Internal only**, just `backend` talks to it |
 
 Because the frontend needs to know the backend's web address before it's built, and the backend

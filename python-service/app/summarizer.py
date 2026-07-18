@@ -47,8 +47,22 @@ def _text_rank_scores(similarity: List[List[float]], damping: float = 0.85, iter
     if n == 0:
         return []
 
-    row_sums = [sum(row) or 1.0 for row in similarity]
-    transition = [[similarity[i][j] / row_sums[i] for j in range(n)] for i in range(n)]
+    # Zero self-similarity first: cosine similarity of a sentence with
+    # itself is always 1.0, which would otherwise create a self-loop. A
+    # sentence with zero real similarity to every *other* sentence would
+    # then have a 100%-self-loop transition row, letting it settle at the
+    # uninformative uniform 1/n score instead of being recognized as
+    # genuinely disconnected. Real TextRank/PageRank graphs have no
+    # self-edges: a sentence doesn't vote for itself.
+    graph = [[0.0 if i == j else similarity[i][j] for j in range(n)] for i in range(n)]
+
+    # A fully zero row (no real similarity to anything) is a PageRank
+    # "dangling node": redistribute its rank uniformly across every
+    # sentence, the standard fix, rather than leaving its transition row
+    # all zero (which would silently drop its rank out of the graph).
+    transition = [
+        [1.0 / n] * n if sum(row) == 0 else [v / sum(row) for v in row] for row in graph
+    ]
 
     scores = [1.0 / n] * n
     for _ in range(iterations):

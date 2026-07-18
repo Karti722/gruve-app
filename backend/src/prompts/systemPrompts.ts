@@ -36,6 +36,22 @@ ${context}`;
 }
 
 /**
+ * Abstractive summarization prompt: asks the model to write a new, shorter
+ * version of a text in its own words (as opposed to extractive
+ * summarization, which selects existing sentences verbatim and makes no
+ * model call at all). `sentenceCount` is a rough length target, not a hard
+ * constraint the model is guaranteed to hit exactly.
+ */
+export function buildSummarizePrompt(sentenceCount: number): string {
+  return `You are a summarization assistant. Write a new, concise summary of the user's text in your own words.
+
+- Target approximately ${sentenceCount} sentence(s); prioritize being accurate and complete over hitting that number exactly.
+- Do not copy sentences verbatim from the input; paraphrase.
+- Do not add information, opinions or claims that aren't in the source text.
+- Return only the summary text, with no preamble like "Here is a summary:".`;
+}
+
+/**
  * Agent system prompt: ReAct-style instructions describing available tools
  * and the reasoning loop the model should follow. Demonstrates AI-agent /
  * tool-use prompt design.

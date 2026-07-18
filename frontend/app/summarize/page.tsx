@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { summarizeText, type SummarizeResponse } from "@/lib/api";
+import { summarizeText, type SummarizeMode, type SummarizeResponse } from "@/lib/api";
 import { TextbookPage } from "@/components/TextbookPage";
 import { Analogy } from "@/components/Analogy";
+import { CaseStudy } from "@/components/CaseStudy";
 import { Sources } from "@/components/Sources";
 
 const SAMPLES = [
@@ -20,17 +21,18 @@ const SAMPLES = [
 export default function SummarizePage() {
   const [text, setText] = useState("");
   const [sentenceCount, setSentenceCount] = useState(3);
+  const [mode, setMode] = useState<SummarizeMode>("abstractive");
   const [result, setResult] = useState<SummarizeResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function runSummarize(inputText: string, count: number) {
+  async function runSummarize(inputText: string, count: number, summarizeMode: SummarizeMode) {
     if (!inputText.trim() || loading) return;
     setLoading(true);
     setError(null);
     setResult(null);
     try {
-      const response = await summarizeText(inputText, count);
+      const response = await summarizeText(inputText, count, summarizeMode);
       setResult(response);
     } catch (err) {
       setError((err as Error).message);
@@ -47,10 +49,32 @@ export default function SummarizePage() {
         </h2>
 
         <div className="card space-y-4">
+          <div className="flex gap-2 border-b border-paper-ink/10 pb-3">
+            {(
+              [
+                ["abstractive", "Abstractive (LLM)"],
+                ["extractive", "Extractive (TextRank)"],
+              ] as const
+            ).map(([value, label]) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setMode(value)}
+                className={`rounded-full px-3 py-1.5 text-xs font-semibold uppercase tracking-wide transition ${
+                  mode === value
+                    ? "bg-brand-600 text-white"
+                    : "bg-paper-ink/5 text-paper-ink/60 hover:bg-paper-ink/10"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              runSummarize(text, sentenceCount);
+              runSummarize(text, sentenceCount, mode);
             }}
             className="space-y-3"
           >
@@ -63,7 +87,7 @@ export default function SummarizePage() {
             />
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <label className="flex items-center gap-2 text-sm text-paper-ink/60">
-                Sentences to extract
+                {mode === "abstractive" ? "Target length (sentences)" : "Sentences to extract"}
                 <select
                   className="input w-auto py-1.5"
                   value={sentenceCount}
@@ -97,7 +121,7 @@ export default function SummarizePage() {
                     type="button"
                     onClick={() => {
                       setText(sample.text);
-                      runSummarize(sample.text, sentenceCount);
+                      runSummarize(sample.text, sentenceCount, mode);
                     }}
                     className="text-left leading-relaxed text-paper-ink/70 underline decoration-paper-ink/25 decoration-dotted underline-offset-4 transition hover:text-brand-700 hover:decoration-brand-500"
                   >
@@ -109,15 +133,35 @@ export default function SummarizePage() {
           </div>
         </div>
 
-        {loading && <p className="text-sm italic text-paper-ink/40">Ranking sentences…</p>}
+        {loading && (
+          <p className="text-sm italic text-paper-ink/40">
+            {mode === "abstractive" ? "Asking Claude to summarize…" : "Ranking sentences…"}
+          </p>
+        )}
         {error && <p className="text-sm text-red-600">Error: {error}</p>}
 
-        {result && (
+        {result && result.mode === "abstractive" && (
+          <div className="card">
+            <div className="mb-2 flex flex-wrap items-center justify-between gap-2 border-b border-paper-ink/10 pb-2">
+              <h3 className="font-display text-xs font-bold uppercase tracking-[0.2em] text-paper-ink/50">
+                Summary (abstractive)
+              </h3>
+              <span className={`pill ${result.mock ? "text-amber-700" : "text-emerald-700"}`}>
+                {result.mock ? "MOCK MODE" : "LIVE · Anthropic"}
+              </span>
+            </div>
+            <p className="whitespace-pre-wrap text-[15px] leading-relaxed text-paper-ink/90">
+              {result.summary}
+            </p>
+          </div>
+        )}
+
+        {result && result.mode === "extractive" && (
           <div className="space-y-4">
             <div className="card">
               <div className="mb-2 flex flex-wrap items-center justify-between gap-2 border-b border-paper-ink/10 pb-2">
                 <h3 className="font-display text-xs font-bold uppercase tracking-[0.2em] text-paper-ink/50">
-                  Summary
+                  Summary (extractive)
                 </h3>
                 <span className="pill text-paper-ink/60">
                   {result.sentences.length} of {result.totalSentences} sentences
@@ -200,55 +244,56 @@ export default function SummarizePage() {
           at it.
         </p>
 
+        <h2 className="font-display text-lg font-bold text-paper-ink">
+          <span className="text-brand-600">5.1</span> Two Families of Summarization
+        </h2>
         <p>
-          Summarization comes in two families. <strong>Abstractive</strong> summarization asks a
-          language model to write a new, shorter version of a text in its own words, the same
-          generation mechanism from Chapter 2, given a document instead of a question.{" "}
-          <strong>Extractive</strong> summarization takes a different approach: instead of
-          generating new text, it selects a handful of the document's own sentences, verbatim, and
-          presents them in their original order as the summary. Nothing is paraphrased or invented:
-          every word in the output already existed in the input, which makes an extractive summary
-          far easier to trust: there's no way for it to introduce a claim the source document never
-          made.
-        </p>
-
-        <p>
-          The demo above uses a specific extractive method called <strong>TextRank</strong>, which
-          scores every sentence in a document by how well-connected it is to the rest of the
-          document's ideas, then keeps only the highest-scoring ones. Each sentence is converted
-          into an embedding, the same technique from Chapter 3, and compared against every other
-          sentence using cosine similarity, producing a similarity score for every pair. That turns
-          the document into a graph: sentences are nodes, and their pairwise similarity is the
-          strength of the edge connecting them. A short, iterative calculation then spreads
-          "importance" across that graph: a sentence earns a high score not by being long or first,
-          but by being similar to many other sentences, the same way a web page earns a high
-          PageRank score by being linked to from many other important pages rather than by anything
-          on the page itself.
-        </p>
-
-        <Analogy>
-          Imagine everyone who has read the document is asked, independently, which other sentence
-          best supports what they just said. TextRank counts those "votes", but a vote from a
-          sentence that itself received a lot of votes counts for more than a vote from a sentence
-          nobody else pointed to, the same recursive idea PageRank uses for links between web pages.
-          After a few rounds of re-counting with that weighting, the sentences with the most (and
-          most credible) support rise to the top.
-        </Analogy>
-
-        <p>
-          Above, paste in a paragraph or two of your own writing, or try one of the samples, and
-          choose how many sentences to extract. The result shows exactly which sentences were
-          selected and their individual scores, so you can see why the algorithm chose them, the
-          same kind of transparency Chapter 3's citations and Chapter 4's reasoning trace already
-          gave you for retrieval and tool use.
+          Summarization comes in two families, and the toggle above switches between working
+          examples of both. <strong>Extractive</strong> summarization selects a handful of the
+          document's own sentences, verbatim, and presents them in their original order as the
+          summary: nothing is paraphrased or invented, which makes it far easier to trust, since
+          there's no way for it to introduce a claim the source document never made, but it can
+          only ever rearrange sentences that already exist. <strong>Abstractive</strong>{" "}
+          summarization asks a language model to write a new, shorter version of a text in its own
+          words, the same generation mechanism from Chapter 2, given a document instead of a
+          question: it can compress across sentences, merge related ideas and use its own phrasing,
+          at the cost of a real model call and the small chance it paraphrases something in a way
+          the source didn't quite mean.
         </p>
 
         <h2 className="font-display text-lg font-bold text-paper-ink">
-          <span className="text-brand-600">5.1</span> Two Smaller, Older Techniques
+          <span className="text-brand-600">5.2</span> How Each Mode Works
         </h2>
         <p>
-          Alongside the summary, two much older and simpler techniques run over the same text.
-          <strong> Keyword extraction</strong> counts how often each word appears after common
+          <strong>Abstractive</strong> mode simply hands your text to a language model with an
+          instruction to paraphrase it in roughly your target length, without copying sentences
+          verbatim or adding claims the source doesn't make, the same generation step Chapter 2
+          uses for chat. If a live model connection isn't available, the tool clearly labels its
+          reply as a placeholder rather than a real paraphrase, since a genuine paraphrase requires
+          an actual model call to produce. <strong>Extractive</strong> mode instead uses{" "}
+          <strong>TextRank</strong>, a graph-based ranking algorithm: each sentence is embedded
+          (the same technique from Chapter 3) and compared against every other sentence with
+          cosine similarity, turning the document into a graph where a sentence's score depends on
+          how well-connected it is to the rest of the document's ideas, the same random-walk idea
+          behind PageRank, applied to sentences instead of web pages. Unlike abstractive mode, this
+          runs for free, with no model call involved at all.
+        </p>
+
+        <Analogy>
+          Extractive summarization is highlighting the most important sentences in a textbook with
+          a marker: quick, free, and every highlighted word is guaranteed to be exactly what the
+          author wrote. Abstractive summarization is asking a well-read friend to explain the
+          chapter back to you in their own words: often clearer and more compact, but now it's
+          their understanding, and their time, standing between you and the source, not the source
+          itself.
+        </Analogy>
+
+        <h2 className="font-display text-lg font-bold text-paper-ink">
+          <span className="text-brand-600">5.3</span> Two Smaller, Older Techniques
+        </h2>
+        <p>
+          Extractive mode also runs two much older and simpler techniques over the same text.{" "}
+          <strong>Keyword extraction</strong> counts how often each word appears after common
           function words like "the" and "of" are filtered out; the surviving high-frequency words
           are a decent guess at what a passage is actually about. It's the "term frequency" half of
           TF-IDF, a term-weighting idea from information retrieval that predates embeddings by
@@ -258,12 +303,43 @@ export default function SummarizePage() {
           <strong>Readability scoring</strong> answers a different question: not what the text is
           about, but how hard it is to read. The Flesch-Kincaid formulas turn three simple counts
           (words, sentences and syllables per word) into an estimated U.S. school grade level.
-          Longer sentences and longer words push the score up; shorter ones bring it down. Run it on
-          both the original text and the extracted summary, and you can see a concrete side effect
-          of extractive summarization: because TextRank tends to favor central, self-contained
-          sentences, the summary's grade level is often lower than the original's, even though not a
-          single word was rewritten to simplify it.
+          Run it on both the original text and either mode's summary and compare: extractive
+          summaries often score a lower (easier) grade level than the original, purely because
+          TextRank tends to favor shorter, self-contained sentences, even though not a single word
+          was rewritten to simplify it, while an abstractive summary's grade level depends entirely
+          on how the model chose to phrase its paraphrase.
         </p>
+
+        <h2 className="font-display text-lg font-bold text-paper-ink">
+          <span className="text-brand-600">5.4</span> Why Not Just Always Use the LLM?
+        </h2>
+        <p>
+          Given a capable model is already one prompt away, it's worth asking why extractive
+          methods are still used in production systems at all, instead of every summarizer just
+          calling an LLM. Two practical reasons: cost and verifiability. An abstractive call bills
+          real tokens on every request, the same way Chapter 1's tokenizer counts and Chapter 2's
+          chat does, while TextRank's embedding-similarity pass, like Chapter 3's retrieval or
+          Chapter 6's cache, runs for free. And because an extractive summary only ever rearranges
+          the source's own sentences, it can never introduce a claim the document didn't make,
+          exactly the hallucination risk Chapter 2 covers, a much stronger trust guarantee than any
+          abstractive rewrite can offer. Reach for extractive when the source needs to be quoted
+          exactly or cost matters at scale; reach for abstractive when a compact, readable
+          paraphrase matters more than either.
+        </p>
+
+        <CaseStudy company="Law Firm Document Review">
+          <p>
+            A law firm reviewing thousands of pages of discovery documents needs both modes for
+            different reasons. Paralegals doing an initial pass use <strong>extractive</strong>{" "}
+            summaries to triage which documents are worth a closer look: every sentence shown is
+            quoted exactly from the source, so nothing can be misattributed to a document during
+            an initial skim, and running it over thousands of pages costs nothing per page. Once a
+            document is flagged as relevant, an attorney asks for an <strong>abstractive</strong>{" "}
+            summary instead, trading a small per-call cost for a compact, readable overview that
+            merges related clauses together, something no amount of sentence-selecting can do,
+            before reading the full document firsthand.
+          </p>
+        </CaseStudy>
 
         <Sources
           items={[
@@ -282,6 +358,11 @@ export default function SummarizePage() {
             {
               label: "Kincaid et al., \"Derivation of New Readability Formulas ... for Navy Enlisted Personnel\" (1975): defines the Flesch-Kincaid Grade Level formula",
               href: "https://apps.dtic.mil/sti/tr/pdf/ADA006655.pdf",
+            },
+            {
+              label:
+                "See et al., \"Get To The Point: Summarization with Pointer-Generator Networks\" (2017): a widely cited neural abstractive summarization approach",
+              href: "https://arxiv.org/abs/1704.04368",
             },
           ]}
         />
