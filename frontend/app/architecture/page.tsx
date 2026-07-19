@@ -223,6 +223,10 @@ export default function ArchitecturePage() {
         <Sources
           items={[
             {
+              label: "The actual source code for this entire system, everything described above included",
+              href: "https://github.com/Karti722/ai-nexus",
+            },
+            {
               label: "pgvector, the Postgres extension actually running this tutorial's vector database",
               href: "https://github.com/pgvector/pgvector",
             },
