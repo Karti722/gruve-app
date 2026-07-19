@@ -501,6 +501,40 @@ not a folder to `cd` into.
 
 ---
 
+## Updating the app after you deploy
+
+Deploying this way does **not** wire this repo up to GitHub or Cloud Run in any automatic sense:
+`git push` alone never updates the live app, since there's no CI/CD pipeline set up here. Every
+`docker build` command in Steps 2 and 5 reads whatever's on your local disk at the moment you run
+it, not from GitHub, so committing/pushing to GitHub and updating the *live* deployed app are two
+entirely separate actions on two separate schedules. Keep committing and pushing to GitHub however
+often you like; separately, whenever you want a code change to actually show up on the live site,
+repeat these steps for just the service(s) you changed, from the `ai-nexus` root folder:
+
+1. Rebuild that service's image: the same `docker build` command from Step 2 (`backend` or
+   `python-service`) or Step 5 (`frontend`).
+2. Push it: the same `docker push` command.
+3. Redeploy it onto the existing service, e.g. for the backend:
+   ```powershell
+   gcloud run deploy backend `
+     --image us-central1-docker.pkg.dev/YOUR_PROJECT_ID/ai-nexus/backend:latest `
+     --region us-central1
+   ```
+   (swap `backend` for `python-service` or `frontend` as needed). This updates the running service
+   in place, it does **not** wipe out the secrets, environment variables or IAM permissions you
+   already set up for it back in Steps 3 and 4, only the container image changes, so you never need
+   to recreate any of those on a routine update.
+
+Two things that only come up the first time you do this, not on every later update:
+- If you only changed `frontend`, you can skip its `--build-arg NEXT_PUBLIC_API_BASE_URL=...` flag
+  on rebuild: the backend's URL doesn't change across redeploys, so the value already baked in is
+  still correct.
+- If you change what `backend` needs from `python-service` (or vice versa), redeploy
+  `python-service` first, same as Step 4 originally did, so `backend` always points at a
+  `python-service` that's actually already running the new code.
+
+---
+
 ## Good to know
 
 - **`python-service` and `postgres` are never given a public web address**, on purpose, only
