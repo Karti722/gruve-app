@@ -44,6 +44,7 @@ services:
       - ANTHROPIC_MODEL=${ANTHROPIC_MODEL:-claude-sonnet-5}
       - PYTHON_EMBEDDING_SERVICE_URL=http://python-service:8001
       - MCP_SERVER_ENTRY=/app/mcp-server/dist/index.js
+      - MCP_WEATHER_API_KEY=${MCP_WEATHER_API_KEY:-}
       - POSTGRES_URL=postgresql://nexus:nexus@postgres:5432/nexus_vectors
     depends_on:
       python-service:

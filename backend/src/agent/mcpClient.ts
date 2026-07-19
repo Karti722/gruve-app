@@ -28,6 +28,14 @@ async function connect(): Promise<Client | null> {
     const transport = new StdioClientTransport({
       command: process.execPath, // current Node binary
       args: [entry],
+      // StdioClientTransport does NOT inherit the parent's environment by
+      // default: with no `env` given, it passes only a small safe allowlist
+      // (PATH, HOME, etc., see the SDK's getDefaultEnvironment()), which
+      // would silently exclude MCP_WEATHER_API_KEY (and every other secret)
+      // from ever reaching the spawned mcp-server process, no matter how
+      // correctly it's set here. Forwarding the full environment explicitly
+      // is what makes the weather tool actually work.
+      env: { ...process.env } as Record<string, string>,
     });
 
     const client = new Client({ name: "ai-nexus-agent", version: "1.0.0" }, { capabilities: {} });

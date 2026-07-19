@@ -160,14 +160,23 @@ export default function ArchitecturePage() {
           stdio (the same standard-input/standard-output channel a command-line program reads and
           writes through), exchanging the JSON-RPC messages the protocol defines: first asking it to
           list its tools, then calling whichever one the model asks for. That server currently
-          exposes three: <code>get_current_time</code>, <code>get_weather</code> (deterministic mock
-          data per city, since there's no live weather API key wired in here, unlike the model calls
-          above) and <code>list_ai_concepts</code>. If that MCP server hasn't been built yet, or
-          fails to start, the agent doesn't error out: it falls back to a small set of tools defined
-          locally in the orchestrator instead (a calculator and a knowledge-base search), a soft
-          failure deliberately chosen since a tutorial demo breaking outright over an unrelated build
-          step would be a worse experience than it silently running one integration lighter for that
-          session.
+          exposes three: <code>get_current_time</code>, <code>get_weather</code> (a real call to
+          WeatherAPI.com, not simulated) and <code>list_ai_concepts</code>. If that MCP server hasn't
+          been built yet, or fails to start, the agent doesn't error out: it falls back to a small set
+          of tools defined locally in the orchestrator instead (a calculator and a knowledge-base
+          search), a soft failure deliberately chosen since a tutorial demo breaking outright over an
+          unrelated build step would be a worse experience than it silently running one integration
+          lighter for that session.
+        </p>
+        <p>
+          Spawning a child process doesn't automatically hand it the parent's environment variables,
+          a genuinely easy detail to miss: Node's stdio transport for MCP only forwards a small, safe
+          allowlist (things like <code>PATH</code>) unless told otherwise, so the orchestrator has to
+          explicitly forward its own environment to the MCP server it spawns, or the weather tool's
+          API key would never actually reach it no matter how correctly it's set on the orchestrator
+          itself. This is the same class of "it's configured correctly, but nothing actually passes
+          it through" gap as the local `.env`-loading fix Chapter 10 describes for the Python service,
+          just one layer further down the process tree.
         </p>
 
         <Analogy>

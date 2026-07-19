@@ -184,12 +184,24 @@ export default function AgentPage() {
               more) by searching the same knowledge base used in the previous chapter
             </li>
             <li>
-              With "extra tools" switched on above: check the current time, look up a (simulated)
-              weather report, or list the topics this tutorial covers, reaching those tools over
-              MCP, described above
+              With "extra tools" switched on above: check the current time, look up the real
+              current weather for a city (via WeatherAPI.com), or list the topics this tutorial
+              covers, reaching those tools over MCP, described above
             </li>
           </ul>
         </div>
+
+        <p>
+          The weather tool specifically is worth calling out: it calls WeatherAPI.com's real
+          current-conditions endpoint, not a canned demo value, which is exactly the point MCP's
+          "any tool source" pitch above is making concretely instead of abstractly. A tool server
+          exposed over MCP isn't limited to illustrative data; it can just as easily be a thin
+          wrapper around a real external system, and the agent calling it neither knows nor cares
+          which, only that it asked for a city's weather and got back a real answer. Try the "Check
+          the weather" sample below and look at the tool result step in the trace: it says outright
+          that the number came from a live WeatherAPI.com call just now, not a demo value dressed up
+          to look real.
+        </p>
 
         <p>
           Above, you could try a sample prompt or write your own: anything that needs a calculation

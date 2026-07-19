@@ -403,7 +403,16 @@ A separate Node process, deliberately decoupled from the Express backend, speaki
 Context Protocol's JSON-RPC framing over stdio, exactly how it would plug into Claude Desktop or
 Claude Code. It uses the SDK's low-level `Server` API with plain JSON-Schema tool definitions
 (the same schema shape Anthropic's tool-use API expects) and exposes three tools:
-`get_current_time`, `get_weather` (mock data, deterministic per city) and `list_ai_concepts`.
+`get_current_time`, `get_weather` (a real call to WeatherAPI.com, requires `MCP_WEATHER_API_KEY`)
+and `list_ai_concepts`. Unlike a missing `VOYAGE_API_KEY`, a missing/invalid
+`MCP_WEATHER_API_KEY` doesn't take down this whole process: `get_weather` returns a clear MCP
+tool error (`isError: true`) for that one call, while `get_current_time` and `list_ai_concepts`,
+which share this same server process and don't need the key at all, keep working regardless.
+Since `mcpClient.ts` spawns this server as a child process, and Node's stdio transport does
+**not** forward the parent's environment by default (only a small safe allowlist, e.g. `PATH`),
+`mcpClient.ts` explicitly passes `{ ...process.env }` when constructing the transport, otherwise
+`MCP_WEATHER_API_KEY` would never reach this process no matter how correctly it's set on the
+backend.
 
 ### `python-service/`: the Python microservice (see section 1 for why it exists as its own service)
 A FastAPI app with five endpoints. Only `/health` needs nothing but
@@ -558,17 +567,23 @@ server built into its image) and `frontend` (:3000). Set `ANTHROPIC_API_KEY` in 
 root `.env` before running to get live Claude responses instead of mock mode.
 
 ### Stopping everything (Options A / B)
-Press **Ctrl+C** in the terminal running `npm run dev`. As of `scripts/dev.js`, this should now
-clean up after itself automatically: `concurrently`'s own SIGINT handling settles `dev.js`'s
-`result` promise, which triggers the exact same cleanup as `npm run stop` before the process
-exits, so in the common case, Ctrl+C alone is enough.
+Press **Ctrl+C** once in the terminal running `npm run dev`. `scripts/dev.js` handles `SIGINT`
+directly, rather than only reacting once `concurrently`'s own `result` promise settles: on
+Windows, each of the four spawned services runs through its own `cmd.exe` wrapper, and Ctrl+C
+delivers `CTRL_C_EVENT` to every one of them at once, so every wrapper independently pops up its
+own "Terminate batch job (Y/N)?" prompt and blocks on it. `result` only resolves once every child
+has actually exited, which never happened on its own since nothing answered those prompts, which
+used to mean a single Ctrl+C would hang until you pressed it again and typed `Y`. Handling `SIGINT`
+directly instead forces the exact same cleanup `npm run stop` does immediately on the first press,
+via `taskkill /F`, which doesn't care that a process is sitting at an interactive prompt, so
+there's nothing left to answer.
 
 The honest caveat: Windows process trees (`npm` → `cmd.exe` → `node` → `tsx`/`next`/`uvicorn`,
-each nested a layer deeper) don't always propagate a kill signal all the way down, and this was
-directly observed during development: orphaned processes have shown up after both a plain
-Ctrl+C-style interrupt and, less surprisingly, a hard/forced kill (e.g. closing the terminal
-window, or a supervisor tool killing the process without giving it a chance to run its exit
-handler). So treat Ctrl+C as "probably enough," not "guaranteed," and run this after, regardless:
+each nested a layer deeper) don't always propagate a kill signal all the way down, and orphaned
+processes have shown up after a hard/forced kill (e.g. closing the terminal window, or a
+supervisor tool killing the process without giving it a chance to run its exit handler). A single
+Ctrl+C in the terminal `npm run dev` actually owns is the case this fix targets; if you ever stop
+it some other way, run this after, just in case:
 ```bash
 npm run stop
 ```

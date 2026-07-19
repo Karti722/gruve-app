@@ -21,8 +21,6 @@ const server = new Server(
   { capabilities: { tools: {} } }
 );
 
-const WEATHER_CONDITIONS = ["sunny", "partly cloudy", "overcast", "light rain", "clear skies"];
-
 const AI_CONCEPTS = [
   "Large Language Models (LLMs)",
   "Retrieval-Augmented Generation (RAG)",
@@ -45,7 +43,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     },
     {
       name: "get_weather",
-      description: "Returns a mock current-weather report for a given city. Demo data only, not a live API.",
+      description: "Returns the real current weather for a given city, via WeatherAPI.com.",
       inputSchema: {
         type: "object",
         properties: { city: { type: "string", description: "City name, e.g. 'Austin'" } },
@@ -69,14 +67,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
   if (name === "get_weather") {
     const city = String((args as { city?: string })?.city ?? "");
-    const seed = hashString(city.toLowerCase());
-    const tempF = 55 + (seed % 40);
-    const condition = WEATHER_CONDITIONS[seed % WEATHER_CONDITIONS.length];
-    return {
-      content: [
-        { type: "text", text: `${city}: ${tempF}°F, ${condition} (mock data served by the MCP tool server).` },
-      ],
-    };
+    return getWeather(city);
   }
 
   if (name === "list_ai_concepts") {
@@ -88,12 +79,50 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   throw new Error(`Unknown tool: ${name}`);
 });
 
-function hashString(value: string): number {
-  let hash = 0;
-  for (let i = 0; i < value.length; i++) {
-    hash = (hash * 31 + value.charCodeAt(i)) | 0;
+/**
+ * Real current-weather lookup via WeatherAPI.com (weatherapi.com/docs/), a
+ * genuinely free tier: 100,000 calls/month, no credit card. There is
+ * deliberately no offline/mock fallback here: unlike a missing
+ * VOYAGE_API_KEY, which would crash this whole app's Python service at
+ * startup (see python-service/app/embeddings.py), a missing or invalid
+ * MCP_WEATHER_API_KEY only ever fails this one tool call, returned as a
+ * clear MCP tool error, since get_current_time and list_ai_concepts share
+ * this same server process and have nothing to do with weather at all.
+ */
+async function getWeather(city: string) {
+  const apiKey = process.env.MCP_WEATHER_API_KEY;
+  if (!apiKey) {
+    return {
+      isError: true,
+      content: [{ type: "text", text: "MCP_WEATHER_API_KEY is not configured; cannot fetch real weather data." }],
+    };
   }
-  return Math.abs(hash);
+
+  const url = `https://api.weatherapi.com/v1/current.json?key=${encodeURIComponent(apiKey)}&q=${encodeURIComponent(city)}`;
+  const response = await fetch(url);
+  const body: any = await response.json();
+
+  if (!response.ok) {
+    const message = body?.error?.message ?? `WeatherAPI request failed with status ${response.status}.`;
+    return { isError: true, content: [{ type: "text", text: `WeatherAPI error: ${message}` }] };
+  }
+
+  const { location, current } = body as {
+    location: { name: string; region: string; country: string };
+    current: { temp_f: number; temp_c: number; feelslike_f: number; condition: { text: string }; humidity: number };
+  };
+
+  return {
+    content: [
+      {
+        type: "text",
+        text:
+          `${location.name}, ${location.region || location.country}: ${current.temp_f}°F ` +
+          `(feels like ${current.feelslike_f}°F), ${current.condition.text}, ${current.humidity}% humidity. ` +
+          `(Live data from WeatherAPI.com, fetched just now.)`,
+      },
+    ],
+  };
 }
 
 async function main() {
