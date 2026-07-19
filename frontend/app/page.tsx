@@ -5,7 +5,7 @@ const CHAPTERS = [
     number: "Chapter 1",
     href: "/tokenizer",
     title: "Tokenization and the Cost of a Request",
-    description: "A real BPE tokenizer, and what a hosted model actually costs to call.",
+    description: "The exact token count Claude actually bills for, and what that costs to call.",
   },
   {
     number: "Chapter 2",

@@ -198,8 +198,8 @@ export default function EvalPage() {
           evaluation are the applied-engineering thread running underneath the rest of this
           tutorial: knowing what a request costs, cutting that cost without silently breaking
           correctness, and measuring correctness well enough to know the difference. Chapter 8
-          picks the story back up with how real companies apply all of this, cost, caching and
-          evaluation included, at production scale.
+          picks the story back up with the real-world deployments, at the millions-of-users scale,
+          where getting exactly this right (or wrong) has real, measured consequences.
         </p>
 
         <Sources

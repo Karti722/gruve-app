@@ -13,9 +13,9 @@ together by using them directly.
 | Prompt engineering | `backend/src/prompts/systemPrompts.ts` |
 | AI agents & tool use | `backend/src/agent/` + `/agent` page |
 | Model Context Protocol (MCP) | `mcp-server/` (a real MCP server) + `backend/src/agent/mcpClient.ts` (a real MCP client) |
-| Vector databases & embeddings | `backend/src/rag/vectorStore.ts` (real pgvector + HNSW index), `backend/src/rag/embeddingsClient.ts` |
+| Vector databases & embeddings | `backend/src/rag/vectorStore.ts` (real pgvector + HNSW index), `backend/src/rag/embeddingsClient.ts` → `python-service/app/embeddings.py` (real Voyage AI embeddings) |
 | Automatic summarization | `backend/src/routes/summarize.route.ts`, a toggle between abstractive (a real Claude call) and extractive (`python-service/app/summarizer.py`, TextRank) + `/summarize` page |
-| Tokenization & cost estimation | `python-service/app/tokenizer.py` (from-scratch BPE) + `/tokenizer` page |
+| Tokenization & cost estimation | `backend/src/routes/tokenizer.route.ts` (real Claude token count via the Anthropic API) + `/tokenizer` page |
 | Semantic caching | `python-service/app/semantic_cache.py` + `/cache` page |
 | Evaluating AI outputs | `python-service/app/eval.py` + `/eval` page |
 | Python | `python-service/` (FastAPI microservice; see section 1 for what it does and why) |
@@ -226,8 +226,6 @@ ai-nexus/
 │       │   └── agentLoop.ts       # the think → act → observe → answer loop
 │       ├── summarize/
 │       │   └── summarizeClient.ts # calls python-service's /summarize (extractive mode only)
-│       ├── tokenizer/
-│       │   └── tokenizerClient.ts # calls python-service's /tokenize
 │       ├── cache/
 │       │   └── cacheClient.ts     # calls python-service's /cache-sim
 │       ├── eval/
@@ -237,7 +235,7 @@ ai-nexus/
 │       │   ├── rag.route.ts       # POST /api/rag/query
 │       │   ├── agent.route.ts     # POST /api/agent/run
 │       │   ├── summarize.route.ts # POST /api/summarize (mode: "abstractive" calls llmClient, "extractive" calls python-service)
-│       │   ├── tokenizer.route.ts # POST /api/tokenize
+│       │   ├── tokenizer.route.ts # POST /api/tokenize (calls Anthropic's real count_tokens API directly)
 │       │   ├── cache.route.ts     # POST /api/cache-sim
 │       │   └── eval.route.ts      # POST /api/evaluate
 │       └── utils/
@@ -254,12 +252,11 @@ ai-nexus/
 │   ├── Dockerfile
 │   ├── package.json               # npm script shims so root `npm run dev` can launch it too
 │   └── app/
-│       ├── main.py                # FastAPI app: /health, /embed, /summarize, /tokenize, /cache-sim, /evaluate
-│       ├── embeddings.py          # deterministic hashing embedding (swappable for a real model)
+│       ├── main.py                # FastAPI app: /health, /embed, /summarize, /cache-sim, /evaluate
+│       ├── embeddings.py          # real Voyage AI embeddings (voyage-4-lite)
 │       ├── summarizer.py          # TextRank extractive summarization
 │       ├── keywords.py            # term-frequency keyword extraction
 │       ├── readability.py         # Flesch / Flesch-Kincaid readability scoring
-│       ├── tokenizer.py           # from-scratch byte-pair encoding + per-model cost estimation
 │       ├── semantic_cache.py      # embedding-similarity cache simulation
 │       └── eval.py                # exact-match / ROUGE-L / semantic-similarity eval harness
 │
@@ -350,7 +347,9 @@ ai-nexus/
     version transparently fell back to a second, in-process hashing embedding, which was removed:
     a transient failure during `seedDocuments.ts`'s one-time seed could otherwise have permanently
     embedded the whole knowledge base with a different, less accurate algorithm than every later
-    live query uses, a silent retrieval-quality bug rather than a visible, fixable error.
+    live query uses, a silent retrieval-quality bug rather than a visible, fixable error. (That
+    in-process hashing embedding no longer exists at all, even on the Python side: `embeddings.py`
+    now calls a real Voyage AI model, see `python-service/` below.)
   - `vectorStore.ts`: a real vector database (Postgres + the **pgvector** extension), with a
     `chunks` table (`embedding vector(1024)`), a genuine HNSW ANN index
     (`USING hnsw (embedding vector_cosine_ops)`) and a `UNIQUE (source, text)` index enforced at
@@ -373,17 +372,19 @@ ai-nexus/
     the MCP server hasn't been built yet.
   - `agentLoop.ts`: the ReAct loop: ask the LLM for a step, execute a tool if requested, feed the
     result back, repeat (capped at 4 steps), return the full trace plus final answer.
-- **`src/summarize/summarizeClient.ts`**, **`src/tokenizer/tokenizerClient.ts`**,
-  **`src/cache/cacheClient.ts`**, **`src/eval/evalClient.ts`**: one thin client per Python-service
-  endpoint, all following the same shape as `embeddingsClient.ts`'s HTTP call: POST, translate the
-  Python service's `snake_case` JSON into the rest of the app's `camelCase` convention, throw a
-  clear error on failure. `summarizeClient.ts` only covers the *extractive* mode; abstractive mode
-  has no client here at all, since `summarize.route.ts` calls `llmClient` directly for that mode,
-  the same as chat/RAG/agent. None of the Python-service clients, embeddings
-  included, have an
-  in-process fallback: each is a feature nothing else in the app depends on (or, for embeddings,
-  one where a silent fallback risked corrupting the seeded vector store), so a clear error is
-  preferable to a silently degraded response.
+- **`src/summarize/summarizeClient.ts`**, **`src/cache/cacheClient.ts`**, **`src/eval/evalClient.ts`**:
+  one thin client per Python-service endpoint, all following the same shape as
+  `embeddingsClient.ts`'s HTTP call: POST, translate the Python service's `snake_case` JSON into
+  the rest of the app's `camelCase` convention, throw a clear error on failure. `summarizeClient.ts`
+  only covers the *extractive* mode; abstractive mode has no client here at all, since
+  `summarize.route.ts` calls `llmClient` directly for that mode, the same as chat/RAG/agent.
+  Tokenization has no client here either, and no Python-service counterpart anymore:
+  `tokenizer.route.ts` calls Anthropic's own token-counting endpoint directly (see section 1 and
+  the `python-service/` section below for why it moved out of Python entirely). None of the
+  Python-service clients, embeddings included, have an in-process fallback: each is a feature
+  nothing else in the app depends on (or, for embeddings, one where a silent fallback risked
+  corrupting the seeded vector store), so a clear error is preferable to a silently degraded
+  response.
 - **`src/routes/`**: thin Express handlers that validate input, call into the modules above and
   shape the JSON response. Each catch block uses `utils/errors.ts` to surface the real failure
   reason (e.g. an Anthropic billing error) instead of a generic message, so failures are
@@ -405,19 +406,25 @@ Claude Code. It uses the SDK's low-level `Server` API with plain JSON-Schema too
 `get_current_time`, `get_weather` (mock data, deterministic per city) and `list_ai_concepts`.
 
 ### `python-service/`: the Python microservice (see section 1 for why it exists as its own service)
-A FastAPI app with six real endpoints, none of which need any downloaded model, GPU or API key:
-`pip install -r requirements.txt` is the entire setup, unchanged since this service's first
-endpoint:
+A FastAPI app with five endpoints. Only `/health` needs nothing but
+`pip install -r requirements.txt`; every other endpoint requires a real `VOYAGE_API_KEY`, not just
+`/embed`: `/summarize` (TextRank's sentence-similarity pass), `/cache-sim` and `/evaluate` all call
+into `embeddings.py` too. In practice the requirement is even stricter than "per endpoint": since
+`embeddings.py` constructs its Voyage client eagerly at module-import time
+(`voyageai.Client(api_key=os.environ["VOYAGE_API_KEY"])`), a missing key crashes this whole service
+at startup, before any endpoint, `/health` included, is reachable at all.
 - **`GET /health`**: liveness check.
-- **`POST /embed`** (`embeddings.py`): turns text into vectors using a dependency-free
-  deterministic hashing scheme, with common English stopwords dropped before hashing (otherwise
-  two unrelated questions sharing only filler words like "what is the" score as more similar than
-  a genuine paraphrase) and a small acronym-expansion table, sourced from this app's own glossary
-  (`MCP`, `RAG`, `LLM`, `BPE`, `HNSW`, `API`, plural forms included), so a query using the acronym
-  and one spelling it out land close together. Both are targeted fixes for specific failure modes
-  this exact algorithm has, not general synonym detection. The module's docstring shows exactly
-  how to swap in a real `sentence-transformers` model or an OpenAI embeddings call without
-  touching any other service.
+- **`POST /embed`** (`embeddings.py`): calls Voyage AI's real embedding API (`voyage-4-lite`,
+  requested at a fixed 1024-dimension output to match this app's pgvector column width), passing
+  through Voyage's documented "document" vs "query" `input_type` distinction for better retrieval
+  quality: `seedDocuments.ts` embeds knowledge-base chunks as `"document"`, live questions
+  (`rag.route.ts`, `tools.ts`) as `"query"`. This replaced an earlier from-scratch deterministic
+  hashing ("bag of words") embedding, a real, historically-legitimate technique refined with
+  stopword filtering and a domain-acronym expansion table, but one that could never capture true
+  synonymy the way a real trained model does; all of that machinery is gone along with it. There
+  is deliberately no offline fallback: a fabricated embedding would silently corrupt the vector
+  store, so this fails loudly (at import time, since the client is constructed eagerly) if
+  `VOYAGE_API_KEY` is missing, rather than degrading quietly.
 - **`POST /summarize`** (`summarizer.py`, `keywords.py`, `readability.py`): real TextRank
   extractive summarization (a graph/PageRank-style ranking over the sentences' own embeddings),
   plus term-frequency keyword extraction and Flesch/Flesch-Kincaid readability scoring for both the
@@ -428,10 +435,6 @@ endpoint:
   genuinely irrelevant, disconnected sentence settle at the uninformative uniform 1/n score instead
   of ranking low, exactly the bug this once had; a fully-disconnected sentence's rank is
   redistributed uniformly across the graph instead (the standard PageRank fix for dangling nodes).
-- **`POST /tokenize`** (`tokenizer.py`): a byte-pair encoding tokenizer trained from scratch, at
-  import time, on a small bundled corpus (real BPE, the same algorithm behind GPT's and Claude's
-  tokenizers, just trained on kilobytes instead of the corpora production tokenizers use), plus a
-  per-model cost estimate at published rates.
 - **`POST /cache-sim`** (`semantic_cache.py`): replays a list of queries against an in-memory
   cache keyed by embedding cosine similarity rather than exact text match, reporting which queries
   would have hit an existing cache entry.
@@ -439,10 +442,32 @@ endpoint:
   match, a ROUGE-L longest-common-subsequence overlap score and embedding-based semantic
   similarity.
 
-Every algorithm here is implemented from scratch and is honestly scaled down from its production
-equivalent (a tokenizer trained on kilobytes, not terabytes; a hashing embedding, not a neural
-one) rather than faked; see each module's docstring for exactly what it's a real, smaller version
-of, and the citation to the original technique.
+Every one of these four call sites embeds all of its texts in a single batched `embed_batch()`
+call rather than one Voyage request per text (per sentence in `summarizer.py`, per query in
+`semantic_cache.py`, per candidate/reference pair in `eval.py`, per knowledge-base file in
+`seedDocuments.ts`). This isn't just an efficiency nicety: Voyage's free tier defaults to 3
+requests/minute until a payment method is on file, so the original one-request-per-text version of
+each of these genuinely failed under real use (seeding 7 files, summarizing a multi-sentence
+document, or replaying more than 3 cache queries would all blow through the cap partway through).
+
+`python-service` also doesn't load the repo-root `.env` on its own the way the Node services do:
+`scripts/dev.js` spawns it via `concurrently` with no `.env` passthrough, so `main.py` explicitly
+calls `load_dotenv()` (pointed at the repo root) before importing `embeddings.py`, which reads
+`VOYAGE_API_KEY` at import time. Every other env var this service reads had a fallback default
+that happened to already match `.env`'s value, which is why this gap stayed invisible until
+`VOYAGE_API_KEY`, deliberately built with no fallback, surfaced it.
+
+Tokenization is not one of these anymore either: `backend/src/routes/tokenizer.route.ts` calls
+Anthropic's own token-counting endpoint directly for an exact count, since an earlier from-scratch
+BPE tokenizer here, while a real algorithm, never matched Claude's actual token boundaries, which
+meant the "cost to run this on claude-sonnet-5" figure shown next to it was never quite right for
+the model it named.
+
+Every remaining from-scratch algorithm here (TextRank, keyword extraction, readability scoring,
+the semantic cache's threshold logic, the eval metric) is honestly scaled down from its production
+equivalent rather than faked; see each module's docstring for exactly what it's a real, smaller
+version of, and the citation to the original technique. Embeddings and tokenization are the two
+exceptions: both now call a real hosted model directly instead of approximating one.
 
 ### `frontend/`: the Next.js app (the interface, see section 1)
 - **`lib/api.ts`**: typed fetch wrappers for every backend endpoint; the only place that knows
@@ -479,9 +504,12 @@ npm run install:all           # installs root, backend, frontend, mcp-server npm
 ```
 (`install:all` runs `pip install -r python-service/requirements.txt`, which needs `python`/`pip`
 on your `PATH`. It also runs `npm install` at the repo root, which is what makes `concurrently`
-(and therefore `npm run dev`) available.) `python-service/requirements.txt` hasn't grown as new
-endpoints were added: every algorithm in `app/` is implemented with the Python standard library
-only, by design (see section 1).
+(and therefore `npm run dev`) available.) Every algorithm this service implements itself (TextRank,
+keyword extraction, readability, the semantic cache, the eval metric) still uses the Python
+standard library only, by design (see section 1); `requirements.txt`'s two non-framework
+dependencies, `voyageai` (the real embedding calls) and `python-dotenv` (loading the repo-root
+`.env` locally, since this service doesn't get one passed down the way the Node services do), are
+there to call a real hosted model and read its key, not to implement an algorithm.
 
 ### Build the MCP server once
 The agent's MCP-tool mode spawns a **compiled** MCP server, so build it once after installing:
@@ -580,9 +608,9 @@ ten chapters and the glossary, each linking straight to its page.
 the gap between what universities teach and what applied AI engineering actually looks like in
 practice and what a reader should expect to get out of working through it.
 
-**Chapter 1: Tokenization and the Cost of a Request (`/tokenizer`)**: type text and see it split
-into real BPE tokens (trained live by the Python service), plus an estimated dollar cost at
-published per-model rates.
+**Chapter 1: Tokenization and the Cost of a Request (`/tokenizer`)**: type text and get back the
+exact token count Anthropic's own API reports for it, plus an estimated dollar cost at published
+per-model rates.
 
 **Chapter 2: LLM Chat (`/chat`)**: a chat window with a message history, an input box and a
 "MOCK MODE" / "LIVE · Anthropic" badge in the corner that reflects the backend's actual mode. Type
@@ -654,12 +682,20 @@ where it's explained and, where one exists, to a real primary source.
   `http://localhost:3000` locally, but **must** be set to the frontend's real public URL in
   deployment (see `deployment.md`'s "backend ↔ frontend URL is circular" note), otherwise any
   other website's JS could call the deployed backend and spend your Anthropic API budget.
-- **The Python service's algorithms are honestly scaled down, not faked.** The BPE tokenizer,
-  TextRank summarizer and hashing embeddings are all real implementations of real algorithms,
-  just trained or run on far less data than a production system would use, exactly as each
-  module's docstring explains. None of them call out to a hosted model or fabricate output.
-  Chapter 5's *abstractive* summarization mode is the one deliberate exception to "no hosted model
-  call" anywhere in this service's territory, and it lives entirely in the Node backend instead,
-  precisely so this distinction stays clean: see Chapter 5's own prose for why extractive and
-  abstractive summarization are a genuinely different cost/trust trade-off, not one being strictly
-  better than the other.
+- **The Python service's remaining from-scratch algorithms are honestly scaled down, not faked.**
+  The TextRank summarizer, its keyword extraction and its readability scoring are all real
+  implementations of real algorithms, just run on far less data than a production system would
+  use, exactly as each module's docstring explains, and none of them call out to a hosted model.
+  Embeddings (`/embed`) used to be in this category too, a from-scratch hashing scheme, until it
+  was replaced with a real call to Voyage AI: unlike the tokenizer swap below, this wasn't about
+  fixing a wrong number, the hashing scheme was honestly labeled as approximate, it was about
+  giving RAG, the semantic cache and TextRank itself a real embedding space instead of an
+  approximate one. Tokenization (Chapter 1) was replaced the same way, calling Anthropic's real
+  token-counting API directly, because its old from-scratch BPE version had a correctness problem
+  the embeddings swap didn't: it displayed a "cost to run this on claude-sonnet-5" figure computed
+  from a token count that wasn't actually claude-sonnet-5's. Chapter 5's *abstractive*
+  summarization mode remains the one deliberate real-model-call exception living in this service's
+  conceptual territory but not its actual code, in the Node backend instead, precisely so this
+  distinction stays clean: see Chapter 5's own prose for why extractive and abstractive
+  summarization are a genuinely different cost/trust trade-off, not one being strictly better than
+  the other.

@@ -13,7 +13,7 @@ correct but phrased differently. This demo runs exactly those three.
 
 from typing import List
 
-from app.embeddings import embed_text
+from app.embeddings import embed_batch
 
 
 def _cosine_similarity(a: List[float], b: List[float]) -> float:
@@ -47,7 +47,8 @@ def _rouge_l(candidate: str, reference: str) -> float:
 def evaluate(candidate: str, reference: str) -> dict:
     exact_match = candidate.strip().lower() == reference.strip().lower()
     rouge_l = _rouge_l(candidate, reference)
-    semantic_similarity = round(_cosine_similarity(embed_text(candidate), embed_text(reference)), 4)
+    candidate_vec, reference_vec = embed_batch([candidate, reference])
+    semantic_similarity = round(_cosine_similarity(candidate_vec, reference_vec), 4)
     composite = round((rouge_l + semantic_similarity) / 2, 4)
 
     return {

@@ -8,7 +8,7 @@ import { Sources } from "@/components/Sources";
 
 const SAMPLES = [
   "Retrieval-augmented generation grounds a model's answer in real, retrieved passages instead of relying on memory alone.",
-  "supercalifragilisticexpialidocious, a made-up word this tokenizer was never trained on.",
+  "supercalifragilisticexpialidocious, a made-up word most tokenizers were never directly trained on.",
 ];
 
 export default function TokenizerPage() {
@@ -49,14 +49,14 @@ export default function TokenizerPage() {
           >
             <textarea
               className="input min-h-[7rem] resize-y"
-              placeholder="Type or paste text to tokenize…"
+              placeholder="Type or paste text to count tokens for…"
               value={text}
               onChange={(e) => setText(e.target.value)}
               disabled={loading}
             />
             <div className="flex justify-end">
               <button type="submit" className="btn-primary shrink-0" disabled={loading || !text.trim()}>
-                Tokenize
+                Count Tokens
               </button>
             </div>
           </form>
@@ -84,28 +84,19 @@ export default function TokenizerPage() {
           </div>
         </div>
 
-        {loading && <p className="text-sm italic text-paper-ink/40">Encoding…</p>}
+        {loading && <p className="text-sm italic text-paper-ink/40">Asking Claude for an exact count…</p>}
         {error && <p className="text-sm text-red-600">Error: {error}</p>}
 
         {result && (
           <div className="space-y-4">
             <div className="card">
-              <div className="mb-2 flex flex-wrap items-center justify-between gap-2 border-b border-paper-ink/10 pb-2">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <h3 className="font-display text-xs font-bold uppercase tracking-[0.2em] text-paper-ink/50">
-                  Tokens
+                  Exact Token Count
                 </h3>
-                <span className="pill text-paper-ink/60">{result.tokenCount} tokens</span>
+                <span className="pill text-emerald-700">LIVE · Anthropic</span>
               </div>
-              <div className="flex flex-wrap gap-1.5">
-                {result.tokens.map((t, i) => (
-                  <span
-                    key={i}
-                    className="rounded-sm bg-brand-500/10 px-1.5 py-0.5 font-mono text-[13px] text-paper-ink/80"
-                  >
-                    {t === "" ? "·" : t}
-                  </span>
-                ))}
-              </div>
+              <p className="mt-2 text-2xl font-semibold text-paper-ink">{result.tokenCount} tokens</p>
             </div>
 
             <div className="card">
@@ -154,19 +145,18 @@ export default function TokenizerPage() {
           instead of one unhelpful "unknown word" marker.
         </p>
         <p>
-          The demo above runs a real BPE tokenizer, trained live when this service starts up, on a
-          small bundled paragraph of AI-concept text. It behaves exactly like a production
-          tokenizer, just trained on a few kilobytes of text instead of the enormous corpora real
-          providers use, so its token boundaries won't match GPT's or Claude's exactly. Try the
-          second sample above: a long, invented word gets split into several smaller pieces, the
-          same fallback behavior a production tokenizer relies on for text it's never seen before.
+          No provider publishes the exact vocabulary their production tokenizer learned this way,
+          so there's no way to train a small local copy and expect its token boundaries to line up
+          with a real model's. The demo above sidesteps that entirely: instead of approximating,
+          it asks Claude directly for the exact count of whichever text you enter, the same count
+          that model would actually bill for.
         </p>
 
         <Analogy>
-          Think of it like assembling a word out of a fixed set of puzzle pieces cut in advance.
-          Common whole words got their own single piece because they showed up constantly during
-          cutting. A word that never showed up has to be built out of several smaller, more generic
-          pieces instead, slower to assemble, but nothing is ever truly unrepresentable.
+          Approximating tokenization from scratch is like guessing how many puzzle pieces a box
+          contains by cutting your own cardboard into similar-sized shapes: a reasonable estimate,
+          but never the real count. Asking the actual manufacturer for the count on the box is the
+          only way to know for certain, which is exactly what this chapter's demo does.
         </Analogy>
 
         <h2 className="font-display text-lg font-bold text-paper-ink">
@@ -187,6 +177,10 @@ export default function TokenizerPage() {
             {
               label: "Sennrich, Haddow & Birch, \"Neural Machine Translation of Rare Words with Subword Units\" (2015): the paper that adapted BPE to language tokenization",
               href: "https://arxiv.org/abs/1508.07909",
+            },
+            {
+              label: "Anthropic: token counting API reference (the exact endpoint this chapter's demo calls)",
+              href: "https://platform.claude.com/docs/en/api/messages-count-tokens",
             },
             {
               label: "Anthropic: official Claude API pricing (current rates cited above)",

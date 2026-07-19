@@ -16,7 +16,7 @@ entry (and which one, and how similar) or was a miss that got added.
 
 from typing import List, Optional
 
-from app.embeddings import embed_text
+from app.embeddings import embed_batch
 
 
 def _cosine_similarity(a: List[float], b: List[float]) -> float:
@@ -24,14 +24,23 @@ def _cosine_similarity(a: List[float], b: List[float]) -> float:
 
 
 def run_cache_simulation(queries: List[str], threshold: float = 0.85) -> List[dict]:
+    # Embedding every query in one batched call, rather than one Voyage
+    # request per query in the loop below, matters here for the same reason
+    # it did in backend/src/rag/seedDocuments.ts: Voyage's free tier caps at
+    # 3 requests/minute until a payment method is on file, and this demo
+    # accepts up to 20 queries per simulation.
+    stripped = [q.strip() for q in queries]
+    non_empty = [(i, q) for i, q in enumerate(stripped) if q]
+    embeddings = embed_batch([q for _, q in non_empty]) if non_empty else []
+    embedding_by_index = {i: emb for (i, _), emb in zip(non_empty, embeddings)}
+
     cache: List[dict] = []
     results: List[dict] = []
 
-    for raw_query in queries:
-        query = raw_query.strip()
+    for i, query in enumerate(stripped):
         if not query:
             continue
-        embedding = embed_text(query)
+        embedding = embedding_by_index[i]
 
         best_match: Optional[str] = None
         best_similarity = 0.0

@@ -68,6 +68,8 @@ value here too so the two never drift apart.
 | FastAPI | 0.115.0 (exact) | `python-service/requirements.txt` |
 | Uvicorn | 0.30.6 (exact) | `python-service/requirements.txt` |
 | Pydantic | 2.9.2 (exact) | `python-service/requirements.txt` |
+| voyageai (Voyage AI embeddings SDK) | 0.5.0 (exact) | `python-service/requirements.txt` |
+| python-dotenv | 1.0.1 (exact) | `python-service/requirements.txt` |
 | PostgreSQL | 16 | `docker-compose.yml`'s `postgres` service (`pgvector/pgvector:pg16`) |
 | pgvector extension | bundled with the `pgvector/pgvector:pg16` image | same |
 
@@ -120,6 +122,16 @@ project-creation screen, not a command.
    canned `[MOCK MODE]` replies you'd get without one, see "About mock mode" right below for what
    that fallback looks like if you ever want to skip the key later. Save the key somewhere, it
    starts with `sk-ant-`, you'll store it as a secret in Step 3.
+5. **(Your browser)** Get an API key at [dashboard.voyageai.com](https://dashboard.voyageai.com/)
+   (free, no credit card, 200 million free tokens on the model this guide uses). Unlike the
+   Anthropic key above, **this one is required, not optional**: RAG, semantic caching and
+   extractive summarization all embed text through this key with no offline fallback, so the app
+   won't come up correctly without it. Save the key somewhere, you'll store it as a secret in
+   Step 3. **Also add a payment method on Voyage's billing page while you're there**, even though
+   the 200 million free tokens still apply either way: without one, the account is capped at 3
+   requests/minute, low enough that concurrent visitors to a real, deployed site can hit it and see
+   errors, a real failure mode observed directly building this app, not a hypothetical. Adding a
+   payment method removes the cap; your existing key keeps working unchanged, no new key needed.
 
 ### What you're deploying
 
@@ -129,7 +141,7 @@ Four pieces, mirroring `docker-compose.yml`:
 |---|---|---|
 | `frontend` | The Next.js website, what you open in a browser | **Public** |
 | `backend` | The Express API the frontend and any API client talks to | **Public** |
-| `python-service` | A FastAPI microservice doing embeddings, extractive summarization, tokenization, caching and evaluation | **Internal only**, just `backend` talks to it |
+| `python-service` | A FastAPI microservice doing embeddings (via a real Voyage AI call), extractive summarization, caching and evaluation | **Internal only**, just `backend` talks to it |
 | `postgres` | A managed Postgres database with the `pgvector` extension | **Internal only**, just `backend` talks to it |
 
 Because the frontend needs to know the backend's web address before it's built, and the backend
@@ -165,6 +177,15 @@ usage cost from Anthropic, not a hosting cost, and it's separate from the $0/mon
 total the rest of this guide is about. If you'd rather not have that usage cost, skip Step 4 and
 the `anthropic-api-key` secret in Step 3, and the app falls back to mock mode automatically.
 
+**This does not extend to `VOYAGE_API_KEY`.** Mock mode only ever covers the final step of
+generating an LLM *answer*; embeddings have no equivalent fallback, since a fabricated embedding
+would silently corrupt the vector store rather than just produce a labeled placeholder reply. RAG,
+the semantic cache, extractive summarization and the eval harness all depend on real embeddings
+(not just the RAG page's own `/embed` calls), so Step 5 of "Before you start" and the
+`voyage-api-key` secret in Step 3 are not optional the way the Anthropic key is; skipping them
+doesn't just disable RAG, it means `python-service` fails to even start, since its embeddings
+client is constructed at process startup, not lazily on first use.
+
 ### The two web addresses that depend on each other
 
 This guide hits the same two-pass shape:
@@ -194,6 +215,7 @@ Every `.env` variable this app reads (`backend/src/config.ts`, `python-service/a
 | `ANTHROPIC_API_KEY` | `backend` | `sk-ant-api03-REAL_KEY_FROM_CONSOLE` | [console.anthropic.com](https://console.anthropic.com/), from Step 4 of "Before you start"; omit for mock mode instead, see "About mock mode" above |
 | `ANTHROPIC_MODEL` | `backend` | `claude-sonnet-5` | fixed, already this repo's default |
 | `PORT` | `backend` | `4000` | fixed, matches `backend/Dockerfile` |
+| `VOYAGE_API_KEY` | `python-service` | `pa-REAL_KEY_FROM_DASHBOARD` | [dashboard.voyageai.com](https://dashboard.voyageai.com/), from Step 5 of "Before you start"; **required**, no mock-mode equivalent, see above |
 | `EMBEDDING_SERVICE_PORT` | `python-service` | `8001` | fixed, matches `python-service/Dockerfile` |
 
 Put together, a fully filled-in production `.env` (illustrative values, not real ones, and not a
@@ -205,6 +227,7 @@ PORT=4000
 FRONTEND_URL=https://ai-nexus.app
 PYTHON_EMBEDDING_SERVICE_URL=http://python-service:8001
 POSTGRES_URL=postgresql://nexus:REAL_PASSWORD@ep-cool-forest-123456.us-east-2.aws.neon.tech/nexus_vectors?sslmode=require
+VOYAGE_API_KEY=pa-REAL_KEY_FROM_DASHBOARD
 EMBEDDING_SERVICE_PORT=8001
 NEXT_PUBLIC_API_BASE_URL=https://api.ai-nexus.app
 ```
@@ -229,7 +252,8 @@ NEXT_PUBLIC_API_BASE_URL=https://api.ai-nexus.app
 **What gets created:** a free Postgres database on Neon, a container image registry (Artifact
 Registry), and three running services on Cloud Run (`backend`, `python-service`, `frontend`).
 Cloud Run's standing free tier (2,000,000 requests and ~180,000 vCPU-seconds a month) comfortably
-covers demo/personal traffic, so this whole path is $0/month.
+covers demo/personal traffic, and Voyage AI's 200-million-free-token allowance comfortably covers
+this app's entire realistic embedding usage, so this whole path is still $0/month.
 
 ### Step 0: Create a Google Cloud account and install its CLI
 
@@ -327,8 +351,9 @@ its tables the first time it connects.
 **Where: Your local terminal, in the `ai-nexus` root folder.**
 
 `gcloud secrets create` reads its value from a file, not typed inline, so write each one to a
-small temporary file first, create the secret, then delete the file. You're creating two secrets
-here, `postgres-url` (from Step 1) and `anthropic-api-key` (from Step 4 of "Before you start").
+small temporary file first, create the secret, then delete the file. You're creating three
+secrets here: `postgres-url` (from Step 1), `anthropic-api-key` (from Step 4 of "Before you
+start") and `voyage-api-key` (from Step 5 of "Before you start").
 
 1. Write your real Neon connection string into a temporary file. `-NoNewline` matters here,
    without it PowerShell would add a trailing line break onto the end of your connection string,
@@ -348,24 +373,38 @@ here, `postgres-url` (from Step 1) and `anthropic-api-key` (from Step 4 of "Befo
    ```powershell
    gcloud secrets create anthropic-api-key --data-file=secret.txt
    ```
-5. Delete the temporary file, both values are already stored in Secret Manager now:
+5. Overwrite the temporary file again with your real Voyage API key:
+   ```powershell
+   Set-Content -Path secret.txt -Value 'PASTE_YOUR_REAL_VOYAGE_API_KEY_HERE' -NoNewline
+   ```
+6. Create the `voyage-api-key` secret from it. Unlike the Anthropic key, **this one cannot be
+   skipped**, see "About mock mode" above:
+   ```powershell
+   gcloud secrets create voyage-api-key --data-file=secret.txt
+   ```
+7. Delete the temporary file, all three values are already stored in Secret Manager now:
    ```powershell
    Remove-Item secret.txt
    ```
 
 If you decided to skip the Anthropic key and use mock mode instead (see above), just skip steps 3
-and 4 here, and skip `ANTHROPIC_API_KEY` in Step 4's `--set-secrets` flag below too.
+and 4 here, and skip `ANTHROPIC_API_KEY` in Step 4's `--set-secrets` flag below too. Steps 5 and 6
+(the Voyage key) are not skippable the same way; RAG, the semantic cache and extractive
+summarization all fail without it.
 
 ### Step 4: Deploy the backend and python-service
 
 **Where: Your local terminal, in the `ai-nexus` root folder.**
 
-1. Deploy `python-service` first (`backend` needs to know its address):
+1. Deploy `python-service` first (`backend` needs to know its address). This is where the
+   `voyage-api-key` secret from Step 3 goes, not on `backend`, since `python-service` is what
+   actually calls Voyage AI:
    ```powershell
    gcloud run deploy python-service `
      --image us-central1-docker.pkg.dev/YOUR_PROJECT_ID/ai-nexus/python-service:latest `
      --region us-central1 --no-allow-unauthenticated --ingress internal `
-     --port 8001
+     --port 8001 `
+     --set-secrets VOYAGE_API_KEY=voyage-api-key:latest
    ```
 2. Save its address into a variable, so you don't have to copy/paste it by hand:
    ```powershell
@@ -466,8 +505,11 @@ not a folder to `cd` into.
 
 - **`python-service` and `postgres` are never given a public web address**, on purpose, only
   `backend` and `frontend` are reachable from outside.
-- **Never put `ANTHROPIC_API_KEY` directly in a Dockerfile or commit it to git.** This guide only
-  ever loads it from Secret Manager at runtime, if you choose to add it at all.
+- **Never put `ANTHROPIC_API_KEY` or `VOYAGE_API_KEY` directly in a Dockerfile or commit them to
+  git.** This guide only ever loads either from Secret Manager at runtime.
+- **`VOYAGE_API_KEY` has no mock-mode equivalent.** Unlike the Anthropic key, which degrades to a
+  labeled placeholder reply if skipped, embeddings have no offline fallback anywhere in this app:
+  RAG, the semantic cache and extractive summarization all fail outright without a real Voyage key.
 - **`mcp-server` is never deployed as its own separate step.** It's already compiled into the
   backend's image and started automatically alongside it (`backend/src/agent/mcpClient.ts` spawns
   it as a background process). There's nothing extra to set up for it.
@@ -520,12 +562,16 @@ remove what this guide created.
    ```powershell
    gcloud secrets delete anthropic-api-key
    ```
-6. Delete the Artifact Registry repository. This removes the `backend`, `frontend` and
+6. Delete the `voyage-api-key` secret:
+   ```powershell
+   gcloud secrets delete voyage-api-key
+   ```
+7. Delete the Artifact Registry repository. This removes the `backend`, `frontend` and
    `python-service` images inside it too, you don't need to delete those separately:
    ```powershell
    gcloud artifacts repositories delete ai-nexus --location=us-central1
    ```
-7. **(Your browser, optional)** Delete the Neon project: go to
+8. **(Your browser, optional)** Delete the Neon project: go to
    [console.neon.tech](https://console.neon.tech), open the project you created in Step 1, and
    delete it from its settings page. Neon is a separate company from Google Cloud, so nothing in
    the `gcloud` commands above touches it, this is the only step that isn't a `gcloud` command.
@@ -544,5 +590,5 @@ gcloud projects delete YOUR_PROJECT_ID
 Replace `YOUR_PROJECT_ID` with the same Project ID you've used in every command throughout this
 guide. Google gives you roughly a 30-day grace period where the project is disabled but
 recoverable before it's permanently purged, in case you delete the wrong one by mistake. This
-does not touch your Neon project, delete that separately in your browser the same way as step 7
+does not touch your Neon project, delete that separately in your browser the same way as step 8
 in Option 1 above if you want it gone too.

@@ -180,6 +180,20 @@ export default function RagPage() {
         </Analogy>
 
         <p>
+          The demo above only has a few dozen passages to search, few enough that comparing a
+          question's embedding directly against every stored one is instant either way. Real
+          systems often store millions or billions of embeddings, where checking every single one
+          for every question stops being practical. Production vector databases handle this with an
+          approximate index, most commonly one called <strong>HNSW</strong> (Hierarchical Navigable
+          Small World), which arranges embeddings into a graph structured so a search only has to
+          follow a handful of connections to land near the true closest matches, rather than
+          visiting every stored embedding directly. That trades a small, usually unnoticeable amount
+          of accuracy for a very large speed gain at scale, exactly the trade-off Chapter 8 shows a
+          real company making, and exactly the index this tutorial's own vector database actually
+          runs, covered in more detail in Chapter 9.
+        </p>
+
+        <p>
           Finally, the model is instructed to answer strictly from the retrieved passages and to
           cite which passage supports each part of its answer, so instead of taking the response on
           faith, you can check exactly where each claim came from. That's what you should have just

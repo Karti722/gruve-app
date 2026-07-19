@@ -141,7 +141,6 @@ export interface CostEstimate {
 }
 
 export interface TokenizeResponse {
-  tokens: string[];
   tokenCount: number;
   costEstimates: CostEstimate[];
 }

@@ -19,15 +19,26 @@ export async function seedKnowledgeBaseIfEmpty(): Promise<void> {
   const files = fs.readdirSync(KB_DIR).filter((f) => f.endsWith(".md"));
   console.log(`[rag] seeding vector store from ${files.length} knowledge-base file(s)...`);
 
+  // One embedTexts call per file used to mean one Voyage request per file.
+  // Voyage's free tier defaults to 3 requests/minute until a payment method
+  // is on file (still free up to 200M tokens either way), so 7 files in a
+  // tight loop got rate-limited partway through. Embedding every chunk from
+  // every file in a single batched call keeps this to one request total.
+  const allChunks: { source: string; text: string }[] = [];
   for (const file of files) {
     const fullPath = path.join(KB_DIR, file);
     const raw = fs.readFileSync(fullPath, "utf-8");
-    const chunks = chunkText(raw);
-    const embeddings = await embedTexts(chunks);
-
-    for (let i = 0; i < chunks.length; i++) {
-      await addChunk(file, chunks[i], embeddings[i]);
+    for (const text of chunkText(raw)) {
+      allChunks.push({ source: file, text });
     }
+  }
+
+  const embeddings = await embedTexts(
+    allChunks.map((c) => c.text),
+    "document"
+  );
+  for (let i = 0; i < allChunks.length; i++) {
+    await addChunk(allChunks[i].source, allChunks[i].text, embeddings[i]);
   }
 
   console.log(`[rag] seeding complete: ${await countChunks()} chunks indexed.`);

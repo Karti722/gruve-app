@@ -7,11 +7,10 @@ these text-processing concerns isolated and independently deployable/
 scalable from the chat/agent/RAG orchestration layer). Endpoints:
 /embed for the RAG demo's vector search; /summarize for extractive
 (TextRank) summarization, plus keyword extraction and readability
-scoring; /tokenize for BPE tokenization and per-model cost estimation;
-/cache-sim for a semantic-caching simulation; and /evaluate for a small
-LLM-output evaluation harness, the last three modeling everyday applied
-AI engineering concerns (token cost, caching and evals) rather than a
-single user-facing demo technique.
+scoring; /cache-sim for a semantic-caching simulation; and /evaluate for a
+small LLM-output evaluation harness, the last two modeling everyday
+applied AI engineering concerns (caching and evals) rather than a single
+user-facing demo technique.
 
 The Chapter 5 summarize page can also produce an abstractive summary (a
 real Claude call asking the model to paraphrase, via
@@ -19,9 +18,32 @@ backend/src/routes/summarize.route.ts and buildSummarizePrompt) as a
 second mode, entirely on the Node side; this service only ever hosts the
 extractive path, since abstractive generation is an LLM call, not an
 algorithm this service would implement.
+
+Tokenization no longer lives here either: it used to be a from-scratch BPE
+tokenizer, a real algorithm, but one whose token boundaries never matched
+Claude's actual tokenizer, which made the "cost to run this on
+claude-sonnet-5" figure shown next to it technically wrong for the model
+it named. `backend/src/routes/tokenizer.route.ts` now calls Anthropic's
+own token-counting endpoint directly instead, for an exact count.
 """
 
 import os
+from pathlib import Path
+
+from dotenv import load_dotenv
+
+# Load the repo-root .env, the same file backend/src/config.ts loads, before
+# any app.* module below is imported. Without this, python-service only
+# ever saw whatever env vars its parent shell already happened to have:
+# scripts/dev.js spawns every service through `concurrently` with no .env
+# passthrough of its own, and backend's own dotenv.config() call only
+# populates backend's process, not its siblings. That gap stayed invisible
+# as long as every variable this service read had a working fallback
+# default (EMBEDDING_SERVICE_PORT's default already matched .env's value);
+# VOYAGE_API_KEY has no such default, which is what surfaced it. This must
+# run before `from app.embeddings import ...` below, since embeddings.py
+# reads VOYAGE_API_KEY at import time, not lazily.
+load_dotenv(Path(__file__).resolve().parent.parent.parent / ".env")
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -33,7 +55,6 @@ from app.keywords import extract_keywords
 from app.readability import score_readability
 from app.semantic_cache import run_cache_simulation
 from app.summarizer import RankedSentence, split_sentences, summarize
-from app.tokenizer import estimate_cost, tokenize
 
 app = FastAPI(title="AI Nexus Python Service", version="1.0.0")
 
@@ -47,6 +68,7 @@ app.add_middleware(
 
 class EmbedRequest(BaseModel):
     texts: list[str]
+    input_type: str | None = None
 
 
 class EmbedResponse(BaseModel):
@@ -78,23 +100,6 @@ class SummarizeResponse(BaseModel):
     keywords: list[str]
     original_readability: ReadabilityModel
     summary_readability: ReadabilityModel
-
-
-class TokenizeRequest(BaseModel):
-    text: str
-
-
-class CostEstimateModel(BaseModel):
-    model: str
-    input_cost_usd: float
-    input_rate_per_million: float
-    output_rate_per_million: float
-
-
-class TokenizeResponse(BaseModel):
-    tokens: list[str]
-    token_count: int
-    cost_estimates: list[CostEstimateModel]
 
 
 class CacheSimRequest(BaseModel):
@@ -134,7 +139,9 @@ def health():
 
 @app.post("/embed", response_model=EmbedResponse)
 def embed(request: EmbedRequest):
-    return EmbedResponse(embeddings=embed_batch(request.texts), dims=EMBEDDING_DIMS)
+    return EmbedResponse(
+        embeddings=embed_batch(request.texts, input_type=request.input_type), dims=EMBEDDING_DIMS
+    )
 
 
 @app.post("/summarize", response_model=SummarizeResponse)
@@ -149,16 +156,6 @@ def summarize_endpoint(request: SummarizeRequest):
         keywords=extract_keywords(request.text),
         original_readability=ReadabilityModel(**score_readability(request.text)),
         summary_readability=ReadabilityModel(**score_readability(summary_text)),
-    )
-
-
-@app.post("/tokenize", response_model=TokenizeResponse)
-def tokenize_endpoint(request: TokenizeRequest):
-    tokens = tokenize(request.text)
-    return TokenizeResponse(
-        tokens=tokens,
-        token_count=len(tokens),
-        cost_estimates=[CostEstimateModel(**c) for c in estimate_cost(len(tokens))],
     )
 
 

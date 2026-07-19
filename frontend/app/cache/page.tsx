@@ -156,12 +156,14 @@ export default function CachePage() {
           match against.
         </p>
         <p>
-          Try the sample query stream above: the second query is a paraphrase of the first and
-          still misses at the default threshold (this app's hash-based embeddings capture shared
-          words well but not true synonymy; see Chapter 3's honest limitation on this), while the
-          fourth query, an exact repeat of the first, hits immediately. A production system using
-          real semantic embeddings would catch the paraphrase too; lowering the threshold here
-          shows roughly what that looks like.
+          Try the sample query stream above: the second query is a paraphrase of the first, but
+          their real embeddings typically land only around 0.4&ndash;0.5 cosine similarity, well
+          short of the 0.85 default, so it registers as a miss. That's a genuine, measured property
+          of short, differently-worded questions like these, not a shortcut this demo is taking:
+          the embeddings here are real, but two people phrasing the same question differently still
+          don't land as close together in vector space as intuition might suggest. The fourth query,
+          an exact repeat of the first, hits immediately at similarity 1.0. Lower the threshold to
+          somewhere around 0.4&ndash;0.5 and rerun to see the paraphrase get caught too.
         </p>
 
         <Analogy>

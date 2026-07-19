@@ -63,7 +63,7 @@ export default function IntroductionPage() {
           simulated to make a point look cleaner than it is. The agent in Chapter 4 calls a tool
           server over the actual Model Context Protocol; the summarizer in Chapter 5 runs a real
           graph-ranking algorithm over real embeddings; the cost estimate in Chapter 1 is computed
-          from a tokenizer trained on the spot, not a canned number. Chapter 9 goes one level
+          from Claude's own real token count, not an estimate. Chapter 9 goes one level
           further and explains the system doing all of this, and Chapter 10 explains how the whole
           thing was actually built, so curiosity about the guide itself is answered by the guide
           itself, rather than left as an exercise.

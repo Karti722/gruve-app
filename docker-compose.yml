@@ -28,6 +28,7 @@ services:
       - "8001:8001"
     environment:
       - EMBEDDING_SERVICE_PORT=8001
+      - VOYAGE_API_KEY=${VOYAGE_API_KEY:-}
 
   backend:
     build:

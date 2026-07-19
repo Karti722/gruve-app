@@ -45,7 +45,7 @@ const knowledgeBaseTool: LocalTool = {
   },
   execute: async (input) => {
     const query = String(input.query ?? "");
-    const [embedding] = await embedTexts([query]);
+    const [embedding] = await embedTexts([query], "query");
     const results = await searchSimilar(embedding, 3);
 
     if (results.length === 0) return "No relevant passages found.";
