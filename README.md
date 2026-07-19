@@ -36,7 +36,7 @@ Everything beyond this page lives in **[`info/`](./info)**:
 | File | What it covers |
 |---|---|
 | **[`info/codebase.md`](./info/codebase.md)** | The codebase's architecture: why it's split into four services the way it is, every tech-stack choice and its trade-offs, a file-by-file explanation of the whole repo, and how to set it up and run it on your own machine. |
-| **[`info/deployment.md`](./info/deployment.md)** | The exact steps this app was actually deployed with: Google Cloud Run + a free Neon Postgres instance, for a genuine $0/month, written as a complete walkthrough from a blank starting point (no cloud account, nothing installed). |
+| **[`info/deployment.md`](./info/deployment.md)** | The exact steps to deploy this app: Google Cloud Run + a free Neon Postgres instance, for a genuine $0/month, written as a complete walkthrough from a blank starting point (no cloud account, nothing installed). |
 | **[`info/CI-CD.md`](./info/CI-CD.md)** | The GitHub Actions approach taken to automate that deployment, and why: Workload Identity Federation instead of a downloadable service account key, what gets rebuilt and redeployed on every push to `main`, and how to set it up yourself. |
 
 If you're trying to decide where to start: `info/codebase.md` if you want to run this locally or
@@ -62,7 +62,8 @@ other way to run this (Docker Compose, one service at a time) are in `info/codeb
 React/Next.js (TypeScript) frontend · Node.js/Express (TypeScript) API orchestrator · Python/FastAPI
 microservice · PostgreSQL + pgvector · a standalone Model Context Protocol server · Anthropic Claude
 (chat/RAG/agent/tokenization) · Voyage AI (embeddings) · WeatherAPI.com (the agent's one real
-external tool) · Docker + Docker Compose · deployed on Google Cloud Run via GitHub Actions.
+external tool) · Docker + Docker Compose · designed to deploy on Google Cloud Run, with GitHub
+Actions automating it (see `info/deployment.md` and `info/CI-CD.md`).
 
 `info/codebase.md` section 2 explains why each of these was chosen over the alternatives that were
 actually considered, not just what was picked.

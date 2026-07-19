@@ -232,6 +232,15 @@ one, what it's for, and an illustrative example value, using `ai-nexus.app`-styl
 | `MCP_WEATHER_API_KEY` | `backend` | `REAL_KEY_FROM_WEATHERAPI` | [weatherapi.com](https://www.weatherapi.com/), from Step 6 of "Before you start"; optional, omit for a clear per-call error on `get_weather` only, see above |
 | `VOYAGE_API_KEY` | `python-service` | `pa-REAL_KEY_FROM_DASHBOARD` | [dashboard.voyageai.com](https://dashboard.voyageai.com/), from Step 5 of "Before you start"; **required**, no mock-mode equivalent, see above |
 | `EMBEDDING_SERVICE_PORT` | `python-service` | `8001` | fixed, matches `python-service/Dockerfile` |
+| `MCP_SERVER_ENTRY` | *(not set at all in deployment)* | — | `backend/Dockerfile` already bakes in the correct absolute container path (`/app/mcp-server/dist/index.js`); this variable only exists for local dev, where the path is relative instead |
+
+**Eleven variables total in `.env.example`; every one is accounted for above**, either with a real
+value you provide, a value captured automatically, or an explicit "not set in deployment" note.
+None are silently skipped: `ANTHROPIC_MODEL`, `PORT` and `EMBEDDING_SERVICE_PORT` all show up in the
+table with "fixed" values because the code's own default already matches what deployment needs, not
+because they were forgotten, and the step-by-step commands below call out, at the point each one
+would apply, exactly which variables that specific command is setting and which it deliberately
+isn't.
 
 Put together, a fully filled-in production `.env` (illustrative values, not real ones, and not a
 file you actually create, see the note below) looks like:
@@ -433,6 +442,11 @@ Anthropic key is: skip it, and drop `MCP_WEATHER_API_KEY=mcp-weather-api-key:lat
      --port 8001 `
      --set-secrets VOYAGE_API_KEY=voyage-api-key:latest
    ```
+   The only environment variable this service needs is the one secret above.
+   `EMBEDDING_SERVICE_PORT` from `.env.example` deliberately isn't set here: it only matters for
+   running `python-service` locally outside Docker; the deployed image's own `Dockerfile` hardcodes
+   `--port 8001` directly in its startup command, so there's nothing for this variable to configure
+   in the container at all.
 2. Save its address into a variable, so you don't have to copy/paste it by hand:
    ```powershell
    $pythonServiceUrl = gcloud run services describe python-service --region us-central1 --format 'value(status.url)'
@@ -449,6 +463,17 @@ Anthropic key is: skip it, and drop `MCP_WEATHER_API_KEY=mcp-weather-api-key:lat
    `,ANTHROPIC_API_KEY=anthropic-api-key:latest` from the `--set-secrets` value above. If you
    skipped the WeatherAPI key, drop `,MCP_WEATHER_API_KEY=mcp-weather-api-key:latest` the same
    way; either can be dropped independently of the other.)
+
+   That's five of `backend`'s six `.env.example` variables handled (`PORT`,
+   `PYTHON_EMBEDDING_SERVICE_URL`, `POSTGRES_URL`, `ANTHROPIC_API_KEY`, `MCP_WEATHER_API_KEY`); the
+   sixth, `FRONTEND_URL`, isn't set yet on purpose, since the frontend doesn't have an address to
+   give it until Step 5 exists, that's exactly what Step 6 comes back to add. Two more
+   `backend`-read variables from `.env.example` never show up in any `gcloud` command at all:
+   `ANTHROPIC_MODEL` (its default in `backend/src/config.ts`, `claude-sonnet-5`, already matches
+   what this guide uses, so there's nothing to override unless you specifically want a different
+   model) and `MCP_SERVER_ENTRY` (`backend/Dockerfile` already bakes in the correct absolute
+   container path for it, so setting it here would just be overriding a value that's already
+   right).
 4. `backend` also needs explicit permission to call `python-service` (Cloud Run requires this
    even for two services in the same project). First save your project's number into a variable:
    ```powershell
@@ -483,6 +508,10 @@ not a folder to `cd` into.
      --build-arg "NEXT_PUBLIC_API_BASE_URL=$backendUrl" `
      -t us-central1-docker.pkg.dev/YOUR_PROJECT_ID/ai-nexus/frontend:latest frontend
    ```
+   `NEXT_PUBLIC_API_BASE_URL` is `frontend`'s only `.env.example` variable, and this build-arg is
+   the one and only place it's ever set: it's baked into the static JS at build time, not read at
+   runtime, which is exactly why the `gcloud run deploy frontend` command in step 3 below has no
+   `--set-env-vars` flag at all, unlike `backend`'s deploy command.
 2. Push it:
    ```powershell
    docker push us-central1-docker.pkg.dev/YOUR_PROJECT_ID/ai-nexus/frontend:latest
