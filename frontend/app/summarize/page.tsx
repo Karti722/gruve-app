@@ -233,7 +233,13 @@ export default function SummarizePage() {
         )}
       </div>
 
-      <TextbookPage eyebrow="Chapter 5" title="Automatic Text Summarization" pageNumber="Page 5">
+      <TextbookPage
+        eyebrow="Chapter 5"
+        title="Automatic Text Summarization"
+        pageNumber="Page 5"
+        prevPage={{ href: "/agent", label: "Chapter 4: AI Agents and Tool Use" }}
+        nextPage={{ href: "/cache", label: "Chapter 6: Semantic Caching" }}
+      >
         <p>
           Long documents are slow to read, and not every sentence in one carries equal weight:
           most of a document's meaning tends to be concentrated in a handful of central sentences,

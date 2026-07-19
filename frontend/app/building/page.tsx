@@ -4,7 +4,13 @@ import { Analogy } from "@/components/Analogy";
 export default function BuildingPage() {
   return (
     <div className="space-y-10">
-      <TextbookPage eyebrow="Chapter 10" title="How This Tutorial Was Built" pageNumber="Page 10">
+      <TextbookPage
+        eyebrow="Chapter 10"
+        title="How This Tutorial Was Built"
+        pageNumber="Page 10"
+        prevPage={{ href: "/architecture", label: "Chapter 9: The System Behind This Tutorial" }}
+        nextPage={{ href: "/glossary", label: "Glossary" }}
+      >
         <p>
           Chapter 9 walked through what runs behind these pages. This one is about how it came to
           exist in the first place: every chapter, every diagram and every part of the system

@@ -122,7 +122,13 @@ export default function TokenizerPage() {
         )}
       </div>
 
-      <TextbookPage eyebrow="Chapter 1" title="Tokenization and the Cost of a Request" pageNumber="Page 1">
+      <TextbookPage
+        eyebrow="Chapter 1"
+        title="Tokenization and the Cost of a Request"
+        pageNumber="Page 1"
+        prevPage={{ href: "/introduction", label: "Introduction" }}
+        nextPage={{ href: "/chat", label: "Chapter 2: Large Language Models" }}
+      >
         <p>
           Before a model can predict anything, whatever you type has to be converted into a form it
           can actually read. This tutorial starts here, one level below the conversation itself: how

@@ -123,7 +123,13 @@ export default function AgentPage() {
         )}
       </div>
 
-      <TextbookPage eyebrow="Chapter 4" title="AI Agents and Tool Use" pageNumber="Page 4">
+      <TextbookPage
+        eyebrow="Chapter 4"
+        title="AI Agents and Tool Use"
+        pageNumber="Page 4"
+        prevPage={{ href: "/rag", label: "Chapter 3: Retrieval-Augmented Generation" }}
+        nextPage={{ href: "/summarize", label: "Chapter 5: Automatic Text Summarization" }}
+      >
         <p>
           Even with retrieval, a language model still only produces text: it cannot perform a
           precise calculation, take an action or reach out to another system to check something in

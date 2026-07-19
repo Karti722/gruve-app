@@ -153,7 +153,12 @@ const TERMS = [
 export default function GlossaryPage() {
   return (
     <div className="space-y-10">
-      <TextbookPage eyebrow="Reference" title="Glossary of Key Terms" pageNumber="Glossary">
+      <TextbookPage
+        eyebrow="Reference"
+        title="Glossary of Key Terms"
+        pageNumber="Glossary"
+        prevPage={{ href: "/building", label: "Chapter 10: How This Tutorial Was Built" }}
+      >
         <p>
           Every term introduced across the ten chapters of this tutorial, gathered in one place.
           Each entry links back to the chapter where it's explained in full, and to a real source

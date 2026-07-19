@@ -137,6 +137,8 @@ export default function RagPage() {
         eyebrow="Chapter 3"
         title="Retrieval-Augmented Generation (RAG)"
         pageNumber="Page 3"
+        prevPage={{ href: "/chat", label: "Chapter 2: Large Language Models" }}
+        nextPage={{ href: "/agent", label: "Chapter 4: AI Agents and Tool Use" }}
       >
         <p>
           A language model's knowledge is frozen at whatever point its training data was collected,

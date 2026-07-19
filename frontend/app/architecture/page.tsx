@@ -6,7 +6,13 @@ import { Sources } from "@/components/Sources";
 export default function ArchitecturePage() {
   return (
     <div className="space-y-10">
-      <TextbookPage eyebrow="Chapter 9" title="The System Behind This Tutorial" pageNumber="Page 9">
+      <TextbookPage
+        eyebrow="Chapter 9"
+        title="The System Behind This Tutorial"
+        pageNumber="Page 9"
+        prevPage={{ href: "/enterprise", label: "Chapter 8: These Concepts in the Real World" }}
+        nextPage={{ href: "/building", label: "Chapter 10: How This Tutorial Was Built" }}
+      >
         <p>
           Every chapter so far has explained a concept and then let you try it. This chapter turns
           the lens on the tutorial itself: what's actually running behind these pages, and why it's

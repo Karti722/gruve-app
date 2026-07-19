@@ -151,7 +151,13 @@ export default function EvalPage() {
         )}
       </div>
 
-      <TextbookPage eyebrow="Chapter 7" title="Evaluating AI Outputs" pageNumber="Page 7">
+      <TextbookPage
+        eyebrow="Chapter 7"
+        title="Evaluating AI Outputs"
+        pageNumber="Page 7"
+        prevPage={{ href: "/cache", label: "Chapter 6: Semantic Caching" }}
+        nextPage={{ href: "/enterprise", label: "Chapter 8: These Concepts in the Real World" }}
+      >
         <p>
           Chapter 6 cut cost with a semantic cache, but a cache hit is only a win if the cached
           answer was actually correct for the new question, not merely similar-sounding. More

@@ -4,7 +4,12 @@ import { Analogy } from "@/components/Analogy";
 export default function IntroductionPage() {
   return (
     <div className="space-y-10">
-      <TextbookPage eyebrow="Introduction" title="Why This Guide Exists" pageNumber="Page ii">
+      <TextbookPage
+        eyebrow="Introduction"
+        title="Why This Guide Exists"
+        pageNumber="Page ii"
+        nextPage={{ href: "/tokenizer", label: "Chapter 1: Tokenization and the Cost of a Request" }}
+      >
         <p>
           Every job that touches software now touches AI in some form, not as a future
           possibility, but as a thing already sitting in the product, the internal tooling and the

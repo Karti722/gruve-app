@@ -513,8 +513,12 @@ exceptions: both now call a real hosted model directly instead of approximating 
   plain text whenever a tool's output doesn't match its expected shape (an error message, say), so a
   parse miss never hides real information. Also `ConceptCard` + `NavBar` (landing page and
   navigation) and the shared "textbook" vocabulary used by every chapter page: `TextbookPage` (the
-  printed-page shell: eyebrow, title, page number), `Analogy` and `CaseStudy` (left-border callout
-  boxes), `Sources` (a citation list) and `ArchitectureDiagram` (Chapter 9's system diagram).
+  printed-page shell: eyebrow, title, page number, plus an optional `prevPage`/`nextPage` link
+  rendered below the footer on every one of the twelve pages that uses it, in the same
+  Introduction → Chapter 1 → ... → Chapter 10 → Glossary order the homepage's own table of contents
+  lists them in; each end of that sequence simply omits the prop it doesn't have rather than
+  rendering a dead link), `Analogy` and `CaseStudy` (left-border callout boxes), `Sources` (a
+  citation list) and `ArchitectureDiagram` (Chapter 9's system diagram).
 - **`app/`**: one route per chapter (see the directory tree above for the full chapter-to-route
   mapping), plus `/` (the table of contents), `/introduction` (front matter: why this guide
   exists, ahead of Chapter 1) and `/glossary` (every term, cross-linked to its chapter).

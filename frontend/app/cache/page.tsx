@@ -133,7 +133,13 @@ export default function CachePage() {
         )}
       </div>
 
-      <TextbookPage eyebrow="Chapter 6" title="Semantic Caching" pageNumber="Page 6">
+      <TextbookPage
+        eyebrow="Chapter 6"
+        title="Semantic Caching"
+        pageNumber="Page 6"
+        prevPage={{ href: "/summarize", label: "Chapter 5: Automatic Text Summarization" }}
+        nextPage={{ href: "/eval", label: "Chapter 7: Evaluating AI Outputs" }}
+      >
         <p>
           Chapter 1 put a real number on every request to a hosted model. The cheapest possible
           request is one that never has to be made at all, and a <strong>cache</strong> is the
