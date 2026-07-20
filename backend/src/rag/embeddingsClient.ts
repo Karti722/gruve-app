@@ -1,4 +1,5 @@
 import { config } from "../config";
+import { getPythonServiceAuthHeaders } from "../pythonServiceAuth";
 
 // Must match python-service/app/embeddings.py's EMBEDDING_DIMS exactly: this
 // value sets the pgvector column width in vectorStore.ts, so it has to equal
@@ -41,6 +42,7 @@ const RETRY_DELAY_MS = 1000;
  */
 export async function embedTexts(texts: string[], inputType?: "query" | "document"): Promise<number[][]> {
   let lastError: unknown;
+  const authHeaders = await getPythonServiceAuthHeaders();
 
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
     const controller = new AbortController();
@@ -49,7 +51,7 @@ export async function embedTexts(texts: string[], inputType?: "query" | "documen
     try {
       const res = await fetch(`${config.pythonEmbeddingServiceUrl}/embed`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...authHeaders },
         body: JSON.stringify({ texts, input_type: inputType ?? null }),
         signal: controller.signal,
       });

@@ -432,13 +432,27 @@ start"), `voyage-api-key` (from Step 5) and `mcp-weather-api-key` (from Step 6, 
    ```powershell
    Remove-Item secret.txt
    ```
+9. Cloud Run's default service account can't read Secret Manager secrets until you explicitly
+   grant it permission, without this, every `gcloud run deploy` in Step 4 that references one of
+   these secrets fails with a `Permission denied on secret` error. Save your project number into a
+   variable, then grant access:
+   ```powershell
+   $projectNumber = gcloud projects describe YOUR_PROJECT_ID --format='value(projectNumber)'
+   gcloud projects add-iam-policy-binding YOUR_PROJECT_ID `
+     --member="serviceAccount:$projectNumber-compute@developer.gserviceaccount.com" `
+     --role="roles/secretmanager.secretAccessor"
+   ```
+   This grants read access to every secret in the project, simplest option for a single-owner
+   project like this one; a production setup with multiple services and stricter isolation would
+   instead grant this role per-secret.
 
 If you decided to skip the Anthropic key and use mock mode instead (see above), just skip steps 3
 and 4 here, and skip `ANTHROPIC_API_KEY` in Step 4's `--set-secrets` flag below too. Steps 5 and 6
 (the Voyage key) are not skippable the same way; RAG, the semantic cache and extractive
 summarization all fail without it. Step 7 (the WeatherAPI key) is skippable the same way the
 Anthropic key is: skip it, and drop `MCP_WEATHER_API_KEY=mcp-weather-api-key:latest` from Step 4's
-`--set-secrets` flag too.
+`--set-secrets` flag too. Step 9 (the Secret Manager permission grant) is never skippable, it's
+required regardless of which of the optional secrets above you created.
 
 ### Step 4: Deploy the backend and python-service
 
@@ -451,7 +465,7 @@ Anthropic key is: skip it, and drop `MCP_WEATHER_API_KEY=mcp-weather-api-key:lat
    ```powershell
    gcloud run deploy ai-nexus-python `
      --image us-central1-docker.pkg.dev/YOUR_PROJECT_ID/ai-nexus/python-service:latest `
-     --region us-central1 --no-allow-unauthenticated --ingress internal `
+     --region us-central1 --no-allow-unauthenticated `
      --port 8001 `
      --set-secrets VOYAGE_API_KEY=voyage-api-key:latest
    ```
@@ -459,7 +473,13 @@ Anthropic key is: skip it, and drop `MCP_WEATHER_API_KEY=mcp-weather-api-key:lat
    `EMBEDDING_SERVICE_PORT` from `.env.example` deliberately isn't set here: it only matters for
    running `python-service` locally outside Docker; the deployed image's own `Dockerfile` hardcodes
    `--port 8001` directly in its startup command, so there's nothing for this variable to configure
-   in the container at all.
+   in the container at all. Deliberately no `--ingress internal` here: that flag restricts inbound
+   traffic to genuinely VPC-internal routing (a Serverless VPC Connector or similar), which neither
+   service has set up, an earlier version of this guide included it, which made `backend` unable to
+   reach `python-service` at all (silently, as a `404`, indistinguishable from an auth failure). The
+   `--no-allow-unauthenticated` flag by itself, combined with the IAM grant and the ID token
+   `backend` attaches to every request (both a few steps down), is already the actual security
+   boundary: a public URL that's still cryptographically locked to only authorized callers.
 2. Save its address into a variable, so you don't have to copy/paste it by hand:
    ```powershell
    $pythonServiceUrl = gcloud run services describe ai-nexus-python --region us-central1 --format 'value(status.url)'
@@ -470,9 +490,18 @@ Anthropic key is: skip it, and drop `MCP_WEATHER_API_KEY=mcp-weather-api-key:lat
    gcloud run deploy ai-nexus-backend `
      --image us-central1-docker.pkg.dev/YOUR_PROJECT_ID/ai-nexus/backend:latest `
      --region us-central1 --allow-unauthenticated --port 4000 `
-     --set-env-vars "PORT=4000,PYTHON_EMBEDDING_SERVICE_URL=$pythonServiceUrl" `
-     --set-secrets POSTGRES_URL=postgres-url:latest,ANTHROPIC_API_KEY=anthropic-api-key:latest,MCP_WEATHER_API_KEY=mcp-weather-api-key:latest
+     --set-env-vars "PYTHON_EMBEDDING_SERVICE_URL=$pythonServiceUrl" `
+     --set-secrets "POSTGRES_URL=postgres-url:latest,ANTHROPIC_API_KEY=anthropic-api-key:latest,MCP_WEATHER_API_KEY=mcp-weather-api-key:latest"
    ```
+   `--set-secrets` is quoted here for the same reason `--set-env-vars` above it is: on Windows,
+   `gcloud` is actually `gcloud.cmd`, a batch-file wrapper around a Python process, and an unquoted
+   value containing both commas and `=` can get corrupted passing through that extra layer,
+   `gcloud` crashing with a `ValueError` about an "Invalid secret spec" that's missing a key or has
+   commas turned into spaces is exactly what that corruption looks like. A single secret with no
+   comma (`python-service`'s `--set-secrets` above) isn't affected, only multi-secret,
+   comma-joined values are. `PORT` deliberately isn't in `--set-env-vars`: Cloud Run treats it as a
+   reserved name it sets automatically from the `--port` flag right before it, and rejects a deploy
+   that also tries to set it explicitly.
    (If you skipped the Anthropic key and are using mock mode instead, drop
    `,ANTHROPIC_API_KEY=anthropic-api-key:latest` from the `--set-secrets` value above. If you
    skipped the WeatherAPI key, drop `,MCP_WEATHER_API_KEY=mcp-weather-api-key:latest` the same
@@ -489,7 +518,12 @@ Anthropic key is: skip it, and drop `MCP_WEATHER_API_KEY=mcp-weather-api-key:lat
    container path for it, so setting it here would just be overriding a value that's already
    right).
 4. `backend` also needs explicit permission to call `python-service` (Cloud Run requires this
-   even for two services in the same project). First save your project's number into a variable:
+   even for two services in the same project). This grant alone only authorizes the call, `backend`
+   also has to actually attach a Google-signed ID token proving its identity to every request, which
+   is what `backend/src/pythonServiceAuth.ts` does automatically (fetched from Cloud Run's metadata
+   server, no configuration needed here), skipping itself entirely for local dev and Docker
+   Compose, where `python-service` isn't behind this auth at all. First save your project's number
+   into a variable:
    ```powershell
    $projectNumber = gcloud projects describe YOUR_PROJECT_ID --format='value(projectNumber)'
    ```
@@ -500,6 +534,16 @@ Anthropic key is: skip it, and drop `MCP_WEATHER_API_KEY=mcp-weather-api-key:lat
      --member="serviceAccount:$projectNumber-compute@developer.gserviceaccount.com" `
      --role="roles/run.invoker"
    ```
+   If `backend` can already reach `python-service` without this (check with `gcloud run services
+   get-iam-policy ai-nexus-python --region us-central1`, e.g. after deploying `backend` in step 4
+   below), it's very likely because the default compute service account also holds the
+   project-wide `roles/editor` role, a role broad enough to include `run.routes.invoke` on every
+   Cloud Run service in the project, granted automatically by Google on many projects and visible
+   only at the project level (`gcloud projects get-iam-policy YOUR_PROJECT_ID`), not on the
+   individual service. Run this step anyway even if that's the case: relying on `Editor`'s broad
+   access instead of an explicit, least-privilege grant is bad practice, and plenty of real-world
+   GCP setups explicitly turn that automatic grant off, which would break this call silently if
+   this step were skipped.
 6. Save the backend's own web address, you need it in the next step:
    ```powershell
    $backendUrl = gcloud run services describe ai-nexus-backend --region us-central1 --format 'value(status.url)'

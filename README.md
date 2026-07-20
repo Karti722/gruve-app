@@ -5,10 +5,7 @@ real, working implementations of them, not slides and not a sandboxed toy.**
 
 [![Deploy to Cloud Run](https://github.com/Karti722/ai-nexus/actions/workflows/deploy.yml/badge.svg)](https://github.com/Karti722/ai-nexus/actions/workflows/deploy.yml)
 
-<!--
-Once deployed (see info/deployment.md), replace this line with the real URL, e.g.:
-**Live demo:** https://ai-nexus.app
--->
+**Live demo:** https://ai-nexus-5e5vxuuemq-uc.a.run.app
 
 ---
 
@@ -62,8 +59,8 @@ other way to run this (Docker Compose, one service at a time) are in `info/codeb
 React/Next.js (TypeScript) frontend · Node.js/Express (TypeScript) API orchestrator · Python/FastAPI
 microservice · PostgreSQL + pgvector · a standalone Model Context Protocol server · Anthropic Claude
 (chat/RAG/agent/tokenization) · Voyage AI (embeddings) · WeatherAPI.com (the agent's one real
-external tool) · Docker + Docker Compose · designed to deploy on Google Cloud Run, with GitHub
-Actions automating it (see `info/deployment.md` and `info/CI-CD.md`).
+external tool) · Docker + Docker Compose · deployed on Google Cloud Run, with a GitHub Actions
+workflow to automate future redeploys (see `info/deployment.md` and `info/CI-CD.md`).
 
 `info/codebase.md` section 2 explains why each of these was chosen over the alternatives that were
 actually considered, not just what was picked.

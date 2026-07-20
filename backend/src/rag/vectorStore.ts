@@ -22,7 +22,16 @@ export interface SearchResult extends StoredChunk {
   score: number;
 }
 
-const pool = new Pool({ connectionString: config.postgresUrl });
+// Neon (and most hosted Postgres) requires TLS, but node-postgres doesn't
+// reliably auto-enable it from a bare `?sslmode=require` query string, and
+// with no connectionTimeoutMillis a stalled handshake hangs forever instead
+// of failing fast. Local dev's Docker Postgres has no TLS at all, hence the
+// localhost check rather than always enabling ssl.
+const pool = new Pool({
+  connectionString: config.postgresUrl,
+  ssl: config.postgresUrl.includes("localhost") ? false : { rejectUnauthorized: false },
+  connectionTimeoutMillis: 10_000,
+});
 
 let readyPromise: Promise<void> | null = null;
 

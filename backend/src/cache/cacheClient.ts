@@ -1,4 +1,5 @@
 import { config } from "../config";
+import { getPythonServiceAuthHeaders } from "../pythonServiceAuth";
 
 export interface CacheSimResult {
   query: string;
@@ -28,7 +29,7 @@ interface PythonCacheSimResult {
 export async function simulateCache(queries: string[], threshold = 0.85): Promise<CacheSimResponse> {
   const res = await fetch(`${config.pythonEmbeddingServiceUrl}/cache-sim`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...(await getPythonServiceAuthHeaders()) },
     body: JSON.stringify({ queries, threshold }),
   });
 

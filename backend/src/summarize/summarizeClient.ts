@@ -1,4 +1,5 @@
 import { config } from "../config";
+import { getPythonServiceAuthHeaders } from "../pythonServiceAuth";
 
 export interface RankedSentence {
   text: string;
@@ -46,7 +47,7 @@ function toReadability(r: PythonReadability): ReadabilityScore {
 export async function summarizeText(text: string, sentenceCount = 3): Promise<SummarizeResult> {
   const res = await fetch(`${config.pythonEmbeddingServiceUrl}/summarize`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...(await getPythonServiceAuthHeaders()) },
     body: JSON.stringify({ text, sentence_count: sentenceCount }),
   });
 

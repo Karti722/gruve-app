@@ -215,6 +215,7 @@ ai-nexus/
 │   └── src/
 │       ├── server.ts              # Express app entrypoint
 │       ├── config.ts              # env var loading + mock-mode detection
+│       ├── pythonServiceAuth.ts   # attaches a Google ID token to python-service calls when deployed (see info/deployment.md Step 4)
 │       ├── prompts/
 │       │   └── systemPrompts.ts   # versioned prompt templates (chat/RAG/agent)
 │       ├── llm/
@@ -271,7 +272,7 @@ ai-nexus/
     ├── package.json
     ├── next.config.js
     ├── tailwind.config.ts
-    ├── Dockerfile
+    ├── Dockerfile                 # declares NEXT_PUBLIC_API_BASE_URL as an ARG/ENV so `docker build --build-arg` actually reaches `next build` (see below)
     ├── lib/
     │   └── api.ts                 # typed fetch wrappers around every backend endpoint
     ├── components/
@@ -382,7 +383,12 @@ ai-nexus/
     NOTHING` so a repeat seed attempt is now a harmless no-op instead of duplicate rows. Similarity
     search is pushed down into Postgres itself (`ORDER BY embedding <=> $query LIMIT k`) rather
     than scored by hand in JS. (See
-    `06-vector-databases.md` for the general concept this implements.)
+    `06-vector-databases.md` for the general concept this implements.) The `Pool` explicitly sets
+    `ssl` (disabled only for a `localhost` connection string) and a 10-second
+    `connectionTimeoutMillis`: Neon requires TLS and `pg` doesn't reliably auto-enable it from a
+    bare `?sslmode=require` query string alone, and with no timeout set a stalled handshake would
+    hang forever, silently blocking the app from ever starting (found live, deploying to Cloud Run
+    for the first time, see `deployment.md`).
   - `seedDocuments.ts`: on first boot, chunks + embeds every file in
     `data/knowledge-base/` and writes it into the vector store; skipped on later restarts.
 - **`src/agent/`**
@@ -406,7 +412,19 @@ ai-nexus/
   Python-service clients, embeddings included, have an in-process fallback: each is a feature
   nothing else in the app depends on (or, for embeddings, one where a silent fallback risked
   corrupting the seeded vector store), so a clear error is preferable to a silently degraded
-  response.
+  response. All four clients also attach `pythonServiceAuth.ts`'s headers to every request: deployed
+  `python-service` is a private Cloud Run service (`--no-allow-unauthenticated`, see `deployment.md`
+  Step 4), so calls to it need a Google-signed ID token, not just the
+  `run.invoker` IAM grant `deployment.md` already sets up (that only authorizes the caller, it
+  doesn't itself attach proof of identity to a request). `pythonServiceAuth.ts` fetches that token
+  from Cloud Run's own metadata server automatically, no configuration needed, and returns no
+  headers at all for local dev or Docker Compose, neither of which puts any auth in front of
+  `python-service` (matched by the deployed URL's `.run.app` domain specifically, rather than by
+  blacklisting `localhost`, which would miss Docker Compose's own internal hostname,
+  `http://python-service:8001`). This was another bug found live, deploying to Cloud Run for the
+  first time (see `deployment.md`): the `run.invoker` grant alone silently wasn't enough,
+  `python-service` correctly refused every unauthenticated call, masked as an ordinary-looking
+  `404` rather than a `403`, specifically so an unauthorized caller can't tell the service exists.
 - **`src/routes/`**: thin Express handlers that validate input, call into the modules above and
   shape the JSON response. Each catch block uses `utils/errors.ts` to surface the real failure
   reason (e.g. an Anthropic billing error) instead of a generic message, so failures are
@@ -502,7 +520,16 @@ exceptions: both now call a real hosted model directly instead of approximating 
 
 ### `frontend/`: the Next.js app (the interface, see section 1)
 - **`lib/api.ts`**: typed fetch wrappers for every backend endpoint; the only place that knows
-  the backend's URL/shape. No logic beyond request/response typing lives here.
+  the backend's URL/shape. No logic beyond request/response typing lives here. Its
+  `API_BASE_URL` reads `process.env.NEXT_PUBLIC_API_BASE_URL`, falling back to
+  `http://localhost:4000` if unset. Next.js inlines `NEXT_PUBLIC_*` vars into the client JS bundle
+  at build time, not read at runtime, which only works if that variable is actually present in the
+  environment `next build` runs in. A Docker `--build-arg` alone doesn't do that: it has to be
+  declared with `ARG` and promoted to `ENV` inside the Dockerfile first (now fixed, see
+  `Dockerfile` above), or it's silently ignored and every deployed page quietly falls back to
+  `localhost:4000`, unreachable from a real visitor's browser, which is exactly what happened the
+  first time this app was deployed to Cloud Run (every feature failed identically, all baked-in
+  requests pointing at the same wrong, unreachable address, see `deployment.md`).
 - **`components/`**: `ChatWindow` (stateful chat UI), `SourceCitation` (a RAG result card),
   `AgentTrace` (renders the agent's tool_call/tool_result/final steps as a timeline), which for
   `tool_result` steps parses each of the three tools' own plain-text output into a dedicated richer

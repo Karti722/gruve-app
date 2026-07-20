@@ -1,4 +1,5 @@
 import { config } from "../config";
+import { getPythonServiceAuthHeaders } from "../pythonServiceAuth";
 
 export interface EvaluateResult {
   exactMatch: boolean;
@@ -15,7 +16,7 @@ export interface EvaluateResult {
 export async function evaluateOutput(candidate: string, reference: string): Promise<EvaluateResult> {
   const res = await fetch(`${config.pythonEmbeddingServiceUrl}/evaluate`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...(await getPythonServiceAuthHeaders()) },
     body: JSON.stringify({ candidate, reference }),
   });
 
