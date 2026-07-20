@@ -142,14 +142,24 @@ project-creation screen, not a command.
 
 ### What you're deploying
 
-Four pieces, mirroring `docker-compose.yml`:
+Four pieces, mirroring `docker-compose.yml`. The names on the left match the repo's own folder
+names (and everything `codebase.md` calls them); the "Cloud Run service name" column is what you'll
+actually type into every `gcloud run deploy`/`describe`/`update`/`delete` command below, and what
+ends up as the prefix of each public URL (e.g. `https://ai-nexus-abcd1234-uc.a.run.app`), chosen
+deliberately unlike the generic folder names, since the frontend's is the one visitors actually see:
 
-| Service | What it is | Who can reach it |
-|---|---|---|
-| `frontend` | The Next.js website, what you open in a browser | **Public** |
-| `backend` | The Express API the frontend and any API client talks to | **Public** |
-| `python-service` | A FastAPI microservice doing embeddings (via a real Voyage AI call), extractive summarization, caching and evaluation | **Internal only**, just `backend` talks to it |
-| `postgres` | A managed Postgres database with the `pgvector` extension | **Internal only**, just `backend` talks to it |
+| Service | Cloud Run service name | What it is | Who can reach it |
+|---|---|---|---|
+| `frontend` | **`ai-nexus`** | The Next.js website, what you open in a browser | **Public** |
+| `backend` | **`ai-nexus-backend`** | The Express API the frontend and any API client talks to | **Public** |
+| `python-service` | **`ai-nexus-python`** | A FastAPI microservice doing embeddings (via a real Voyage AI call), extractive summarization, caching and evaluation | **Internal only**, just `backend` talks to it |
+| `postgres` | *(not on Cloud Run at all, see Step 1)* | A managed Postgres database with the `pgvector` extension | **Internal only**, just `backend` talks to it |
+
+The Docker **image** names inside Artifact Registry (`.../ai-nexus/backend:latest`,
+`.../ai-nexus/frontend:latest`, `.../ai-nexus/python-service:latest`, set in Step 2) deliberately
+stay the plain folder names and don't change to match: an image name and the Cloud Run service
+name deployed from it are two independent things, and there's no reason to rename the former just
+because the latter changed.
 
 Because the frontend needs to know the backend's web address before it's built, and the backend
 needs to know the frontend's address to allow it to make calls, you deploy in this order:
@@ -257,14 +267,15 @@ EMBEDDING_SERVICE_PORT=8001
 NEXT_PUBLIC_API_BASE_URL=https://api.ai-nexus.app
 ```
 **Two important catches:**
-- Cloud Run doesn't give you a clean domain like `https://ai-nexus.app` for free by default, it
-  hands you an auto-generated address instead (e.g. `https://frontend-abcd1234-uc.a.run.app`).
-  That auto-generated address is what actually gets used in the steps below, captured straight
-  into a variable, and it costs nothing. The `ai-nexus.app`-style names above are only there so
-  it's obvious at a glance which variable is "the frontend's address" versus "the backend's
-  address"; getting an actual clean domain name means buying one and mapping it afterward ([Cloud
-  Run domain mapping](https://cloud.google.com/run/docs/mapping-custom-domains)), which is
-  optional and not part of this $0 guide.
+- Cloud Run doesn't give you a truly custom domain like `https://ai-nexus.app` for free by default,
+  it hands you an auto-generated address instead. Naming the Cloud Run service itself `ai-nexus`
+  (see "What you're deploying" above) gets you something close for free, e.g.
+  `https://ai-nexus-abcd1234-uc.a.run.app`, since that name is exactly what Cloud Run prefixes the
+  address with; it's still not the bare `ai-nexus.app` with nothing else appended, though. That
+  auto-generated address is what actually gets used in the steps below, captured straight into a
+  variable, and it costs nothing. Getting the truly bare domain means buying one and mapping it
+  afterward, which is optional, isn't part of this $0 guide, and is covered on its own in Step 8,
+  after the frontend actually exists to map a domain onto.
 - This guide never has you create an actual `.env` file. In production, Cloud Run injects these as
   real process environment variables/secrets directly onto the container (that's what the
   `--set-env-vars`/`--set-secrets` flags in the commands below do); the block above exists purely
@@ -275,7 +286,8 @@ NEXT_PUBLIC_API_BASE_URL=https://api.ai-nexus.app
 ## Deploying to Google Cloud (GCP): Cloud Run + Neon
 
 **What gets created:** a free Postgres database on Neon, a container image registry (Artifact
-Registry), and three running services on Cloud Run (`backend`, `python-service`, `frontend`).
+Registry), and three running services on Cloud Run (`ai-nexus-backend`, `ai-nexus-python`,
+`ai-nexus`, see "What you're deploying" above for how those map to this repo's folders).
 Cloud Run's standing free tier (2,000,000 requests and ~180,000 vCPU-seconds a month) comfortably
 covers demo/personal traffic, Voyage AI's 200-million-free-token allowance comfortably covers this
 app's entire realistic embedding usage, and WeatherAPI's free tier (100,000 calls/month, if you
@@ -432,11 +444,12 @@ Anthropic key is: skip it, and drop `MCP_WEATHER_API_KEY=mcp-weather-api-key:lat
 
 **Where: Your local terminal, in the `ai-nexus` root folder.**
 
-1. Deploy `python-service` first (`backend` needs to know its address). This is where the
+1. Deploy `python-service` first (`backend` needs to know its address), naming the Cloud Run
+   service `ai-nexus-python` (see "What you're deploying" above). This is where the
    `voyage-api-key` secret from Step 3 goes, not on `backend`, since `python-service` is what
    actually calls Voyage AI:
    ```powershell
-   gcloud run deploy python-service `
+   gcloud run deploy ai-nexus-python `
      --image us-central1-docker.pkg.dev/YOUR_PROJECT_ID/ai-nexus/python-service:latest `
      --region us-central1 --no-allow-unauthenticated --ingress internal `
      --port 8001 `
@@ -449,11 +462,12 @@ Anthropic key is: skip it, and drop `MCP_WEATHER_API_KEY=mcp-weather-api-key:lat
    in the container at all.
 2. Save its address into a variable, so you don't have to copy/paste it by hand:
    ```powershell
-   $pythonServiceUrl = gcloud run services describe python-service --region us-central1 --format 'value(status.url)'
+   $pythonServiceUrl = gcloud run services describe ai-nexus-python --region us-central1 --format 'value(status.url)'
    ```
-3. Deploy `backend`, using that saved address and the secrets from Step 3:
+3. Deploy `backend`, naming the Cloud Run service `ai-nexus-backend`, using that saved address and
+   the secrets from Step 3:
    ```powershell
-   gcloud run deploy backend `
+   gcloud run deploy ai-nexus-backend `
      --image us-central1-docker.pkg.dev/YOUR_PROJECT_ID/ai-nexus/backend:latest `
      --region us-central1 --allow-unauthenticated --port 4000 `
      --set-env-vars "PORT=4000,PYTHON_EMBEDDING_SERVICE_URL=$pythonServiceUrl" `
@@ -481,16 +495,16 @@ Anthropic key is: skip it, and drop `MCP_WEATHER_API_KEY=mcp-weather-api-key:lat
    ```
 5. Then grant the permission:
    ```powershell
-   gcloud run services add-iam-policy-binding python-service `
+   gcloud run services add-iam-policy-binding ai-nexus-python `
      --region us-central1 `
      --member="serviceAccount:$projectNumber-compute@developer.gserviceaccount.com" `
      --role="roles/run.invoker"
    ```
 6. Save the backend's own web address, you need it in the next step:
    ```powershell
-   $backendUrl = gcloud run services describe backend --region us-central1 --format 'value(status.url)'
+   $backendUrl = gcloud run services describe ai-nexus-backend --region us-central1 --format 'value(status.url)'
    ```
-7. Print it so you can see it, e.g. `https://backend-abcd1234-uc.a.run.app`:
+7. Print it so you can see it, e.g. `https://ai-nexus-backend-abcd1234-uc.a.run.app`:
    ```powershell
    $backendUrl
    ```
@@ -510,15 +524,17 @@ not a folder to `cd` into.
    ```
    `NEXT_PUBLIC_API_BASE_URL` is `frontend`'s only `.env.example` variable, and this build-arg is
    the one and only place it's ever set: it's baked into the static JS at build time, not read at
-   runtime, which is exactly why the `gcloud run deploy frontend` command in step 3 below has no
+   runtime, which is exactly why the `gcloud run deploy ai-nexus` command in step 3 below has no
    `--set-env-vars` flag at all, unlike `backend`'s deploy command.
 2. Push it:
    ```powershell
    docker push us-central1-docker.pkg.dev/YOUR_PROJECT_ID/ai-nexus/frontend:latest
    ```
-3. Deploy it:
+3. Deploy it, naming the Cloud Run service `ai-nexus` (see "What you're deploying" above) so its
+   public URL reads `https://ai-nexus-abcd1234-uc.a.run.app` instead of a generic `frontend-...`
+   prefix:
    ```powershell
-   gcloud run deploy frontend `
+   gcloud run deploy ai-nexus `
      --image us-central1-docker.pkg.dev/YOUR_PROJECT_ID/ai-nexus/frontend:latest `
      --region us-central1 --allow-unauthenticated --port 3000
    ```
@@ -529,13 +545,13 @@ not a folder to `cd` into.
 
 1. Save the frontend's address into a variable:
    ```powershell
-   $frontendUrl = gcloud run services describe frontend --region us-central1 --format 'value(status.url)'
+   $frontendUrl = gcloud run services describe ai-nexus --region us-central1 --format 'value(status.url)'
    ```
 2. Update the backend with it. This is a config-only update, no image rebuild, it takes effect
    within a few seconds. `--update-env-vars` only adds/changes the one variable named, so it
    doesn't wipe out `PORT`/`PYTHON_EMBEDDING_SERVICE_URL` from Step 4:
    ```powershell
-   gcloud run services update backend `
+   gcloud run services update ai-nexus-backend `
      --region us-central1 `
      --update-env-vars "FRONTEND_URL=$frontendUrl"
    ```
@@ -546,7 +562,7 @@ not a folder to `cd` into.
 
 1. Check the backend's logs:
    ```powershell
-   gcloud run services logs read backend --region us-central1 --limit 50
+   gcloud run services logs read ai-nexus-backend --region us-central1 --limit 50
    ```
    Look for a log line confirming it connected to Postgres and finished loading its knowledge
    base (the same lines you'd see locally right after `npm run dev` starts).
@@ -556,6 +572,56 @@ not a folder to `cd` into.
    ```
    That address is the link you share; if you want to type it into the browser by hand instead,
    just run `$frontendUrl` on its own to print it.
+
+### Step 8 (optional): Map a custom domain to the frontend
+
+**Where: Your browser** for domain verification, **your local terminal** for the rest.
+
+Skip this entirely if the auto-generated `$frontendUrl` from Step 7 is fine to share as-is; it
+already works, is already on HTTPS, and costs nothing. This step is only for replacing it with
+something like `ai-nexus.app`. Two real costs before you start: buying the domain itself from a
+registrar (Squarespace Domains, Namecheap, Cloudflare, etc., typically $10–20/year), the one part
+of this entire guide that isn't free; and this feature is only available in a specific list of
+Cloud Run regions, `us-central1` (the region this whole guide uses) among them, so nothing extra
+to check there.
+
+1. **(Your browser)** Buy the domain from any registrar, if you don't already own it.
+2. **(Your local terminal)** Verify you own it, unless you bought it through Google domains
+   directly. This opens a browser tab for Google Search Console's ownership check:
+   ```powershell
+   gcloud domains verify ai-nexus.app
+   ```
+   Mapping a subdomain instead (e.g. `www.ai-nexus.app`)? Verify the base domain (`ai-nexus.app`),
+   not the subdomain; Google's verification is base-domain-wide.
+3. **(Your local terminal)** Create the mapping. This is a `beta` command; `gcloud` will offer to
+   install that component automatically the first time if you don't have it yet:
+   ```powershell
+   gcloud beta run domain-mappings create --service ai-nexus --domain ai-nexus.app --region us-central1
+   ```
+4. **(Your local terminal)** Get the DNS records Google needs you to add:
+   ```powershell
+   gcloud beta run domain-mappings describe --domain ai-nexus.app --region us-central1
+   ```
+   The output includes a `resourceRecords` list: one or more `A`/`AAAA` records for the apex domain
+   (`ai-nexus.app` itself, entered as `@` at most registrars) or a `CNAME` record if you mapped a
+   subdomain instead.
+5. **(Your browser)** Add exactly those records at your registrar's DNS settings page. This part
+   genuinely varies by registrar; look for "DNS" or "DNS management," not domain settings generally.
+6. Wait. DNS propagation and Google's automatic SSL certificate issuance together usually take
+   under 15 minutes, but can take up to 24 hours; `https://ai-nexus.app` simply won't resolve (or
+   will show a certificate warning) until both finish. The original `$frontendUrl` from Step 7
+   keeps working the entire time and afterward too: mapping a domain adds a second address, it
+   doesn't replace the first.
+
+**One catch specific to this app, not a generic Cloud Run one:** the backend's CORS policy
+(`FRONTEND_URL`, set in Step 6) only allows the exact origin(s) you told it about. If people start
+reaching the frontend at `https://ai-nexus.app` instead of the `.run.app` address, the backend
+needs that origin added too, or its own API calls back to `backend` will get blocked by CORS, a
+broken-looking app with no obvious error beyond the browser console. `FRONTEND_URL` already accepts
+a comma-separated list, so update it to include both rather than replacing one with the other:
+```powershell
+gcloud run services update ai-nexus-backend --region us-central1 --update-env-vars "FRONTEND_URL=https://ai-nexus.app,https://ai-nexus-abcd1234-uc.a.run.app"
+```
 
 ---
 
@@ -615,41 +681,46 @@ every command in this section.
 Do this if you might use this same GCP project for something else later and want to keep it, just
 remove what this guide created.
 
-1. Delete the frontend service:
+1. If you did Step 8 and mapped a custom domain, delete that mapping first (skip this one if you
+   never did Step 8):
    ```powershell
-   gcloud run services delete frontend --region us-central1
+   gcloud beta run domain-mappings delete --domain ai-nexus.app --region us-central1
    ```
-2. Delete the backend service:
+2. Delete the frontend service:
    ```powershell
-   gcloud run services delete backend --region us-central1
+   gcloud run services delete ai-nexus --region us-central1
    ```
-3. Delete the python-service service:
+3. Delete the backend service:
    ```powershell
-   gcloud run services delete python-service --region us-central1
+   gcloud run services delete ai-nexus-backend --region us-central1
    ```
-4. Delete the `postgres-url` secret:
+4. Delete the python-service service:
+   ```powershell
+   gcloud run services delete ai-nexus-python --region us-central1
+   ```
+5. Delete the `postgres-url` secret:
    ```powershell
    gcloud secrets delete postgres-url
    ```
-5. Delete the `anthropic-api-key` secret (skip this one if you used mock mode and never created
+6. Delete the `anthropic-api-key` secret (skip this one if you used mock mode and never created
    it):
    ```powershell
    gcloud secrets delete anthropic-api-key
    ```
-6. Delete the `voyage-api-key` secret:
+7. Delete the `voyage-api-key` secret:
    ```powershell
    gcloud secrets delete voyage-api-key
    ```
-7. Delete the `mcp-weather-api-key` secret (skip this one if you never created it):
+8. Delete the `mcp-weather-api-key` secret (skip this one if you never created it):
    ```powershell
    gcloud secrets delete mcp-weather-api-key
    ```
-8. Delete the Artifact Registry repository. This removes the `backend`, `frontend` and
+9. Delete the Artifact Registry repository. This removes the `backend`, `frontend` and
    `python-service` images inside it too, you don't need to delete those separately:
    ```powershell
    gcloud artifacts repositories delete ai-nexus --location=us-central1
    ```
-9. **(Your browser, optional)** Delete the Neon project: go to
+10. **(Your browser, optional)** Delete the Neon project: go to
    [console.neon.tech](https://console.neon.tech), open the project you created in Step 1, and
    delete it from its settings page. Neon is a separate company from Google Cloud, so nothing in
    the `gcloud` commands above touches it, this is the only step that isn't a `gcloud` command.
@@ -668,5 +739,5 @@ gcloud projects delete YOUR_PROJECT_ID
 Replace `YOUR_PROJECT_ID` with the same Project ID you've used in every command throughout this
 guide. Google gives you roughly a 30-day grace period where the project is disabled but
 recoverable before it's permanently purged, in case you delete the wrong one by mistake. This
-does not touch your Neon project, delete that separately in your browser the same way as step 9
+does not touch your Neon project, delete that separately in your browser the same way as step 10
 in Option 1 above if you want it gone too.

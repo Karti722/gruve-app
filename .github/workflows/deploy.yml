@@ -58,7 +58,7 @@ jobs:
 
       - name: Deploy python-service
         run: |
-          gcloud run deploy python-service \
+          gcloud run deploy ai-nexus-python \
             --image ${{ env.REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/${{ env.REPO }}/python-service:${{ github.sha }} \
             --region ${{ env.REGION }}
 
@@ -74,13 +74,13 @@ jobs:
 
       - name: Deploy backend
         run: |
-          gcloud run deploy backend \
+          gcloud run deploy ai-nexus-backend \
             --image ${{ env.REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/${{ env.REPO }}/backend:${{ github.sha }} \
             --region ${{ env.REGION }}
 
       - name: Get backend URL
         id: backend_url
-        run: echo "url=$(gcloud run services describe backend --region ${{ env.REGION }} --format 'value(status.url)')" >> "$GITHUB_OUTPUT"
+        run: echo "url=$(gcloud run services describe ai-nexus-backend --region ${{ env.REGION }} --format 'value(status.url)')" >> "$GITHUB_OUTPUT"
 
       # NEXT_PUBLIC_API_BASE_URL is build-time (see info/deployment.md), so the
       # frontend image has to be rebuilt whenever it changes, even though
@@ -96,6 +96,6 @@ jobs:
 
       - name: Deploy frontend
         run: |
-          gcloud run deploy frontend \
+          gcloud run deploy ai-nexus \
             --image ${{ env.REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/${{ env.REPO }}/frontend:${{ github.sha }} \
             --region ${{ env.REGION }}
