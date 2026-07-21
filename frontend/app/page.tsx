@@ -83,7 +83,7 @@ export default function HomePage() {
       <p className="mt-3 font-display text-sm italic text-paper-ink/50 sm:text-base">
         by{" "}
         <a
-          href="https://kartikeyakumaria.vercel.app/"
+          href="https://kartikeyakumaria.com/"
           target="_blank"
           rel="noopener noreferrer"
           className="text-paper-ink/70 underline decoration-paper-ink/25 underline-offset-4 transition hover:text-brand-700 hover:decoration-brand-500"

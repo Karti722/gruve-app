@@ -667,9 +667,13 @@ to check there.
 reaching the frontend at `https://ai-nexus.app` instead of the `.run.app` address, the backend
 needs that origin added too, or its own API calls back to `backend` will get blocked by CORS, a
 broken-looking app with no obvious error beyond the browser console. `FRONTEND_URL` already accepts
-a comma-separated list, so update it to include both rather than replacing one with the other:
+a comma-separated list, so update it to include both rather than replacing one with the other. The
+`^;^` prefix below isn't optional here: `--update-env-vars` is a `KEY=VALUE` flag that normally
+splits on every comma to find separate variables, so without it, gcloud tries to parse the second
+URL as its own `KEY=VALUE` pair and fails with `Bad syntax for dict arg`; `^;^` tells gcloud to
+split pairs on `;` instead, leaving the comma inside `FRONTEND_URL`'s own value alone:
 ```powershell
-gcloud run services update ai-nexus-backend --region us-central1 --update-env-vars "FRONTEND_URL=https://ai-nexus.app,https://ai-nexus-abcd1234-uc.a.run.app"
+gcloud run services update ai-nexus-backend --region us-central1 --update-env-vars "^;^FRONTEND_URL=https://ai-nexus.app,https://ai-nexus-abcd1234-uc.a.run.app"
 ```
 
 ---
