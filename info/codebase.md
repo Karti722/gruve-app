@@ -384,11 +384,16 @@ ai-nexus/
     search is pushed down into Postgres itself (`ORDER BY embedding <=> $query LIMIT k`) rather
     than scored by hand in JS. (See
     `06-vector-databases.md` for the general concept this implements.) The `Pool` explicitly sets
-    `ssl` (disabled only for a `localhost` connection string) and a 10-second
+    `ssl` (disabled only for a `localhost` connection string) and a 30-second
     `connectionTimeoutMillis`: Neon requires TLS and `pg` doesn't reliably auto-enable it from a
     bare `?sslmode=require` query string alone, and with no timeout set a stalled handshake would
     hang forever, silently blocking the app from ever starting (found live, deploying to Cloud Run
-    for the first time, see `deployment.md`).
+    for the first time, see `deployment.md`). 30s specifically, not something tighter, because
+    Neon's free tier scales to zero when idle and waking it back up can occasionally take longer
+    than a normal already-warm handshake; an original 10s timeout here once killed a Cloud Run
+    startup that was otherwise fine, just unlucky enough to hit a cold Neon instance (found via
+    CI/CD's first real redeploy of `backend`, a scenario the original manual deploys never
+    happened to hit).
   - `seedDocuments.ts`: on first boot, chunks + embeds every file in
     `data/knowledge-base/` and writes it into the vector store; skipped on later restarts.
 - **`src/agent/`**

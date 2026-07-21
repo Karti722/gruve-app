@@ -26,11 +26,15 @@ export interface SearchResult extends StoredChunk {
 // reliably auto-enable it from a bare `?sslmode=require` query string, and
 // with no connectionTimeoutMillis a stalled handshake hangs forever instead
 // of failing fast. Local dev's Docker Postgres has no TLS at all, hence the
-// localhost check rather than always enabling ssl.
+// localhost check rather than always enabling ssl. 30s (not something
+// tighter) because Neon's free tier scales to zero when idle, and waking it
+// back up can occasionally take longer than a normal already-warm TLS
+// handshake, a real 10s timeout here once killed a Cloud Run startup that
+// was otherwise fine, just unlucky enough to hit a cold Neon instance.
 const pool = new Pool({
   connectionString: config.postgresUrl,
   ssl: config.postgresUrl.includes("localhost") ? false : { rejectUnauthorized: false },
-  connectionTimeoutMillis: 10_000,
+  connectionTimeoutMillis: 30_000,
 });
 
 let readyPromise: Promise<void> | null = null;
