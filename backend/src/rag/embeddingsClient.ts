@@ -7,8 +7,16 @@ import { getPythonServiceAuthHeaders } from "../pythonServiceAuth";
 // requested at this exact output dimension).
 export const EMBEDDING_DIMS = 1024;
 
-const MAX_ATTEMPTS = 5;
+const MAX_ATTEMPTS = 3;
 const RETRY_DELAY_MS = 1000;
+// 15s, not the original 3s: that was enough for python-service's local dev
+// startup race (see below) but far too tight for a genuinely cold Cloud Run
+// instance, which needs to spin up a new container, fetch an auth token and
+// call Voyage's API before it can even start responding. A real request hit
+// exactly this after a day of no traffic: every attempt aborted on its own
+// 3s timeout while python-service was still cold, not because anything was
+// actually broken.
+const REQUEST_TIMEOUT_MS = 15_000;
 
 /**
  * Gets embeddings for a batch of texts by calling the Python microservice
@@ -32,13 +40,18 @@ const RETRY_DELAY_MS = 1000;
  * searching (rag.route.ts, tools.ts). Callers doing a symmetric comparison
  * instead (none in this file; see semantic_cache.py, summarizer.py) omit it.
  *
- * It does retry a few times first, on a short fixed delay: `npm run dev`
- * starts backend and python-service (a `uvicorn --reload` process, a couple
- * seconds slower to actually accept connections than to start) concurrently,
- * so backend's very first embedding call, the knowledge-base seed at
- * startup, can easily race python-service's own boot. That's an ordinary
- * timing race, not a real outage, so it's worth a few seconds of retrying
- * the identical, correct call before treating it as a genuine failure.
+ * It does retry a few times first, on a short fixed delay, for two different
+ * reasons depending on where it's running: locally, `npm run dev` starts
+ * backend and python-service (a `uvicorn --reload` process, a couple seconds
+ * slower to actually accept connections than to start) concurrently, so
+ * backend's very first embedding call, the knowledge-base seed at startup,
+ * can easily race python-service's own boot. Deployed, python-service is a
+ * Cloud Run service that scales to zero when idle, so the first request
+ * after a quiet period has to wait for a cold container to spin up, fetch
+ * its auth token and reach Voyage's API before it can respond at all.
+ * Neither is a real outage, so it's worth retrying the identical, correct
+ * call, with a generous enough per-attempt timeout to actually survive a
+ * cold start, before treating it as a genuine failure.
  */
 export async function embedTexts(texts: string[], inputType?: "query" | "document"): Promise<number[][]> {
   let lastError: unknown;
@@ -46,7 +59,7 @@ export async function embedTexts(texts: string[], inputType?: "query" | "documen
 
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 3000);
+    const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
     try {
       const res = await fetch(`${config.pythonEmbeddingServiceUrl}/embed`, {

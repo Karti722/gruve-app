@@ -362,12 +362,19 @@ ai-nexus/
 - **`src/rag/`**
   - `chunker.ts`: splits a markdown file into ~600-character overlapping chunks along paragraph
     boundaries.
-  - `embeddingsClient.ts`: POSTs text to the Python service's `/embed`, retrying up to 5 times on
-    a 1-second delay before giving up, since `npm run dev` starts `backend` and `python-service`
-    concurrently and the very first embedding call (the knowledge-base seed at startup) can easily
-    race `python-service`'s own boot; that's an ordinary timing race, not a real outage, worth
-    riding out. Beyond that, it throws a clear error rather than silently degrading. An earlier
-    version transparently fell back to a second, in-process hashing embedding, which was removed:
+  - `embeddingsClient.ts`: POSTs text to the Python service's `/embed`, retrying up to 3 times
+    (each attempt getting a generous 15-second timeout) before giving up. Two different reasons
+    make this worth retrying rather than failing immediately: locally, `npm run dev` starts
+    `backend` and `python-service` concurrently, so the very first embedding call (the
+    knowledge-base seed at startup) can easily race `python-service`'s own boot; deployed,
+    `python-service` is a Cloud Run service that scales to zero when idle, so the first request
+    after a quiet period has to wait for a cold container to spin up, fetch its auth token and
+    reach Voyage's API before it can respond at all. The 15-second timeout isn't arbitrary either:
+    an earlier 3-second timeout looked fine locally but caused a real, live RAG query to fail with
+    `This operation was aborted` after the app had sat idle for a day, python-service's cold start
+    genuinely took longer than 3 seconds, and by the time a user retried by hand, it had already
+    finished warming up. Beyond that, it throws a clear error rather than silently degrading. An
+    earlier version transparently fell back to a second, in-process hashing embedding, which was removed:
     a transient failure during `seedDocuments.ts`'s one-time seed could otherwise have permanently
     embedded the whole knowledge base with a different, less accurate algorithm than every later
     live query uses, a silent retrieval-quality bug rather than a visible, fixable error. (That
