@@ -553,7 +553,7 @@ exceptions: both now call a real hosted model directly instead of approximating 
   citation list) and `ArchitectureDiagram` (Chapter 9's system diagram).
 - **`app/`**: one route per chapter (see the directory tree above for the full chapter-to-route
   mapping), plus `/` (the table of contents, with an author byline linking to
-  https://kartikeyakumaria.vercel.app/ under the title), `/introduction` (front matter: why this
+  https://kartikeyakumaria.com/ under the title), `/introduction` (front matter: why this
   guide exists, ahead of Chapter 1) and `/glossary` (every term, cross-linked to its chapter).
 
 ---
@@ -682,7 +682,11 @@ Docker Compose path with `docker compose down`, which stops everything including
 ## 7. Demo: what you'll see when you run it
 
 **Landing page (`/`)**: a printed-textbook-styled table of contents listing the introduction, all
-ten chapters and the glossary, each linking straight to its page.
+ten chapters and the glossary, each linking straight to its page. The ten chapters are grouped
+under three part labels (Foundations, Applied Techniques, Beyond the Model), a homepage-only
+navigational grouping: no individual chapter page, and nothing elsewhere in the app, refers to
+these parts, each chapter's own eyebrow is still just "Chapter N." Each entry also has a large
+faint serif numeral to its left, purely decorative.
 
 **Introduction (`/introduction`)**: front matter, not a numbered chapter: why this guide exists,
 the gap between what universities teach and what applied AI engineering actually looks like in
