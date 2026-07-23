@@ -5,7 +5,7 @@ real, working implementations of them, not slides and not a sandboxed toy.**
 
 [![Deploy to Cloud Run](https://github.com/Karti722/ai-nexus/actions/workflows/deploy.yml/badge.svg)](https://github.com/Karti722/ai-nexus/actions/workflows/deploy.yml)
 
-**Live demo:** https://ai-nexus-5e5vxuuemq-uc.a.run.app
+**See it Live:** https://ai-nexus-textbook.com/
 
 ---
 
