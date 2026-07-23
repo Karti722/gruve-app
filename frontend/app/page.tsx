@@ -111,37 +111,23 @@ export default function HomePage() {
           <span className="shrink-0 font-display text-sm font-semibold italic text-paper-ink transition group-hover:text-brand-700">
             Introduction: Why This Guide Exists
           </span>
-          <span
-            className="hidden flex-1 translate-y-[-2px] border-b border-dotted border-paper-ink/30 sm:block"
-            aria-hidden
-          />
-          <span className="hidden shrink-0 font-display text-sm text-paper-ink/40 transition group-hover:text-brand-600 sm:inline">
-            /introduction
-          </span>
         </Link>
 
         <ol className="mt-1 space-y-1">
           {CHAPTERS.map((chapter) => (
-            <li key={chapter.href}>
+            <li key={chapter.href} className="group">
               <Link
                 href={chapter.href}
-                className="group flex flex-wrap items-baseline gap-x-3 gap-y-1 border-b border-paper-ink/10 py-4 transition hover:border-brand-500/40"
+                className="flex flex-wrap items-baseline gap-x-3 gap-y-1 border-b border-paper-ink/10 py-4 transition group-hover:border-brand-500/40"
               >
-                <span className="shrink-0 font-display text-xs font-bold uppercase tracking-widest text-brand-600">
+                <span className="shrink-0 font-display text-xs font-bold uppercase tracking-widest text-brand-600 transition group-hover:text-brand-800">
                   {chapter.number}
                 </span>
                 <span className="font-display text-lg font-semibold text-paper-ink transition group-hover:text-brand-700 sm:text-xl">
                   {chapter.title}
                 </span>
-                <span
-                  className="hidden flex-1 translate-y-[-2px] border-b border-dotted border-paper-ink/30 sm:block"
-                  aria-hidden
-                />
-                <span className="hidden shrink-0 font-display text-sm text-paper-ink/40 transition group-hover:text-brand-600 sm:inline">
-                  {chapter.href}
-                </span>
               </Link>
-              <p className="pl-0 pt-1 text-sm text-paper-ink/50 sm:pl-[6.5rem]">
+              <p className="pl-0 pt-1 text-sm text-paper-ink/50 transition group-hover:text-paper-ink/70 sm:pl-[6.5rem]">
                 {chapter.description}
               </p>
             </li>
@@ -155,19 +141,24 @@ export default function HomePage() {
           <span className="shrink-0 font-display text-sm italic text-paper-ink/60 transition group-hover:text-brand-700">
             Glossary of Key Terms
           </span>
-          <span
-            className="hidden flex-1 translate-y-[-2px] border-b border-dotted border-paper-ink/30 sm:block"
-            aria-hidden
-          />
-          <span className="hidden shrink-0 font-display text-sm text-paper-ink/40 transition group-hover:text-brand-600 sm:inline">
-            /glossary
-          </span>
         </Link>
       </div>
 
       <div className="mt-14 flex items-center justify-between border-t border-paper-ink/15 pt-3 font-display text-xs uppercase tracking-widest text-paper-ink/40">
         <span>AI Nexus: An Interactive Tutorial</span>
         <span>Page i</span>
+      </div>
+
+      <div className="mt-4 flex items-start justify-end gap-4 font-display text-xs uppercase tracking-wide">
+        <Link
+          href="/introduction"
+          className="group flex max-w-[45%] items-baseline gap-1.5 text-right text-paper-ink/60 transition hover:text-brand-700"
+        >
+          <span className="truncate normal-case tracking-normal text-paper-ink/80 underline decoration-paper-ink/25 decoration-dotted underline-offset-4 transition group-hover:text-brand-700 group-hover:decoration-brand-500">
+            Introduction: Why This Guide Exists
+          </span>
+          <span aria-hidden>&rarr;</span>
+        </Link>
       </div>
     </div>
   );
