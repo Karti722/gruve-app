@@ -400,7 +400,13 @@ ai-nexus/
     than a normal already-warm handshake; an original 10s timeout here once killed a Cloud Run
     startup that was otherwise fine, just unlucky enough to hit a cold Neon instance (found via
     CI/CD's first real redeploy of `backend`, a scenario the original manual deploys never
-    happened to hit).
+    happened to hit). Deployed `POSTGRES_URL` also has to be Neon's *pooled* connection string
+    (`-pooler` in the hostname), not the direct one: this `Pool` is created independently inside
+    every Cloud Run instance, and Cloud Run can scale `backend` out to several instances under real
+    concurrent traffic, all competing for Neon's much smaller direct-connection ceiling if pooling
+    isn't used. Verified live: 25 concurrent requests against a database-backed endpoint all
+    succeeded on the pooled connection string, after the same test would have risked exhausting
+    the direct one under real multi-user load.
   - `seedDocuments.ts`: on first boot, chunks + embeds every file in
     `data/knowledge-base/` and writes it into the vector store; skipped on later restarts.
 - **`src/agent/`**

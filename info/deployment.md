@@ -345,11 +345,21 @@ every command.
 Go to [console.neon.tech](https://console.neon.tech), sign up (no credit card needed), and click
 **New Project**. Pick a region close to `us-central1`. Neon defaults new projects to PostgreSQL
 18, if you'd rather match this repo's local Postgres 16 exactly, pick **16** from the version
-dropdown on this same screen, `pgvector` works identically either way. Once it's created, copy
-the **connection string** it shows you, it looks like:
+dropdown on this same screen, `pgvector` works identically either way. Once it's created, open the
+**Connect to your branch** panel and make sure **Connection pooling** is toggled on before copying
+the connection string, it looks like:
 ```text
-postgresql://<user>:<password>@<endpoint>.neon.tech/<dbname>?sslmode=require
+postgresql://<user>:<password>@<endpoint>-pooler.neon.tech/<dbname>?sslmode=require
 ```
+The `-pooler` in the hostname is not optional here: `backend` opens its own connection pool
+(`vectorStore.ts`, up to 10 connections by default) independently in every Cloud Run instance, and
+Cloud Run can scale `backend` out to several instances under real concurrent traffic. Without
+pooling, all of those instances compete for Neon's much smaller direct-connection ceiling, and a
+real burst of simultaneous users can exhaust it; with pooling, Neon's own proxy (PgBouncer) shares
+a much larger effective capacity across all of them. This was verified live: 25 concurrent requests
+against a database-backed endpoint succeeded cleanly on the pooled connection string after
+switching from the direct one.
+
 Save this somewhere; it's your `POSTGRES_URL` and you'll paste the whole thing, as-is, into a
 command in Step 3. No extra setup needed here, the app itself creates the `pgvector` extension and
 its tables the first time it connects.
@@ -739,6 +749,18 @@ redeploy cycle a code change needs, rather than running it by hand every time.
   - The GitHub Actions workflow fails on the `google-github-actions/auth` step specifically with
     `PERMISSION_DENIED: IAM Service Account Credentials API has not been used`: see `CI-CD.md`
     Step 1, item 0.
+  - `backend` works fine for one user at a time but starts failing under real concurrent traffic
+    (many visitors at once, e.g. right after sharing the live link somewhere): check whether your
+    `postgres-url` secret uses Neon's pooled connection string (`-pooler` in the hostname, see
+    Step 1) rather than the direct one. Cloud Run scaling `backend` out to multiple instances under
+    load means multiple separate connection pools competing for Neon's much smaller direct-
+    connection ceiling; switching to the pooled string fixes this, verified live by firing 25
+    concurrent requests at a database-backed endpoint and confirming all 25 succeeded.
+  - `embeddingsClient.ts`'s retries throw `This operation was aborted` after a period of no
+    traffic, even though nothing is actually broken: `python-service` scaled to zero and needed
+    longer than the per-attempt timeout to cold-start, fetch its auth token and reach Voyage's API.
+    The timeout is meant to already be generous enough (15s) to survive this; only worth checking
+    if you've hand-edited that file down to something tighter.
 
 ---
 
